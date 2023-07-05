@@ -1,0 +1,140 @@
+---
+title: "G4 CUT&Tag analysis mESC (WT, FANCJ KO, DHX36 KO, DKO)"
+output: html_notebook
+---
+
+Simon Elsässer, Karolinska Institutet (2023)
+
+### R loop analysis at G4 peaks
+
+```{r fig.width=6, fig.height=3}
+bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+
+library("wigglescout")
+library("ggpubr")
+library("ggplot2")
+library("DESeq2")
+library("dplyr")
+library("ggrastr")
+
+clean <- function (fn) {
+  fn <- gsub(pattern = ".+/", "", x = fn)
+  fn <- gsub(pattern = ".mm9.+", "", x = fn)
+  fn <- gsub(pattern = ".mm39.+", "", x = fn)
+  fn <- gsub(pattern = "_S.+", "", x = fn)
+  fn <- gsub(pattern = ".scaled.bw", "", x = fn)
+  fn <- gsub(pattern = ".unscaled.bw", "", x = fn)
+  fn <- gsub(pattern = "_batch2", "", x = fn)
+  fn <- gsub(pattern = "-", " ", x = fn)
+  fn <- gsub(pattern = "_", " ", x = fn)
+  fn <- gsub(pattern = " HA ", " ", x = fn)
+  fn <- gsub(pattern = "D1D6", "FANCJ-/-", x = fn)
+  fn <- gsub(pattern = "P2D2", "DHX36-/-", x = fn)
+  fn <- gsub(pattern = "P3D4", "FANCJ-/-DHX36-/-", x = fn)
+  return(fn)
+}
+
+mypal <-c("cornflowerblue","orange","red2","#505050")
+mypal3 <-c("cornflowerblue","cornflowerblue","cornflowerblue","orange","orange","orange","red2","red2","red2","505050","505050","505050")
+```
+
+
+```{r}
+BWs <- paste0(bw_dir,list.files(bw_dir,pattern="Rloop_.+R.\\.bw"))
+peak_universe <- "../peaks/G4_combined_min3rep.bed"
+
+BWs.WT <- BWs[grep("WT",BWs)]
+BWs.FANCJ <- BWs[grep("D1D6",BWs)]
+BWs.DHX36 <- BWs[grep("P2D2",BWs)]
+BWs.DKO <- BWs[grep("P3D4",BWs)]
+  
+# Calculate here some loci or bins
+cov.WT <- bw_loci(BWs.WT, loci = peak_universe)
+cov.DHX36 <- bw_loci(BWs.DHX36, loci = peak_universe)
+cov.FANCJ <- bw_loci(BWs.FANCJ, loci = peak_universe)
+cov.DKO <- bw_loci(BWs.DKO, loci = peak_universe)
+
+cov.WT$name <- paste0("peak_",1:length(cov.WT))
+cov.DHX36$name <- paste0("peak_",1:length(cov.DHX36))
+cov.FANCJ$name <- paste0("peak_",1:length(cov.FANCJ))
+cov.DKO$name <- paste0("peak_",1:length(cov.DKO))
+```
+```{r}
+cov <- cbind( as.data.frame(cov.WT)[,1:7], 
+              as.data.frame(cov.DHX36)[,6:7], 
+              as.data.frame(cov.FANCJ)[,6:7], 
+              as.data.frame(cov.DKO)[,6:7])
+
+colnames(cov) <- c(colnames(cov)[1:5],"WT1","WT2","DHX1","DHX2","FAN1","FAN2","DKO1","DKO2")
+
+rownames(cov) <- as.data.frame(cov.WT)$name
+
+
+G4_results_table <- read.table("G4_CnT_combined_peaks_DESeq_results.txt", header = T, sep = "\t")
+
+cov$DHX36_sig <- with(G4_results_table, DHX36 & DHX36lfc>1)
+cov$FANCJ_sig <- with(G4_results_table, FANCJ & FANCJlfc>1)
+cov$DKO_sig <- with(G4_results_table, DKO & DKOlfc>1)
+cov$non_sig <- with(G4_results_table, !(DHX36 | FANCJ | DKO))
+```
+
+```{r fig.height=2, fig.width=4}
+library(reshape2)
+mdf <- melt(data.frame(name=rownames(cov),cov[,6:17]))
+mdf <- mdf[mdf$value<100,]
+mdf$cond <- "WT"
+mdf$cond[grep("DHX",mdf$variable)] <- "DHX36-/-"
+mdf$cond[grep("FAN",mdf$variable)] <- "FANCJ-/-"
+mdf$cond[grep("DKO",mdf$variable)] <- "DHX36-/-FANCJ-/-"
+ggviolin(mdf,x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,30))
+```
+
+```{r fig.height=2, fig.width=4}
+ggviolin(mdf[mdf$DHX36_sig,],x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,30))
+```
+
+```{r fig.height=2, fig.width=4}
+ggviolin(mdf[mdf$FANCJ_sig,],x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,30))
+```
+
+```{r fig.height=2, fig.width=4}
+plot_viol_rep_DKO_Rloop <- ggviolin(mdf[mdf$DKO_sig,],x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,20))
+plot_viol_rep_DKO_Rloop
+```
+
+
+```{r fig.height=2, fig.width=4}
+plot_viol_rep_nonsig_Rloop <- ggviolin(mdf[mdf$non_sig,],x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,20))
+plot_viol_rep_nonsig_Rloop
+```
+
+```{r}
+ggsave("plots/peaks_DESeq2_violin_Rloop_DKO.pdf",plot_viol_rep_DKO_Rloop,width = 2, height= 3)
+ggsave("plots/peaks_DESeq2_violin_Rloop_nonsig.pdf",plot_viol_rep_nonsig_Rloop,width = 2, height= 3)
+``` 
+
+```{r fig.width=8, fig.height=3}
+
+p <- ggdraw() +
+  draw_plot(plot_viol_rep_DKO_Rloop, x = .4, y = 0.5, width = .60, height = 0.5) +
+  draw_plot(plot_viol_rep_nonsig_Rloop, x = 0.4, y = 0, width = .60, height = 0.5) +
+  draw_plot_label(label = c("a", "b", "c"), size = 15,
+                  x = c(0, 0.4, 0.4), y = c(1, 1, 0.5))
+p
+ggsave("panels/peak_Rloop_violin_v2.pdf",p,width=8, height=3)
+``` 
+
+```{r fig.width=8, fig.height=3}
+p <- ggdraw() +
+  draw_plot(plot_viol_rep_DKO_Rloop, x = .2, y = 0, width = .40, height = 0.7) +
+  draw_plot(plot_viol_rep_nonsig_Rloop, x = 0.6, y = 0, width = .40, height = 0.7) +
+  draw_plot_label(label = c("a", "b", "c"), size = 15,
+                  x = c(0, 0.2, 0.6), y = c(1, 0.8, 0.8))
+p
+ggsave("panels/peak_Rloop_violin_v1.pdf",p,width=8, height=4)
+``` 

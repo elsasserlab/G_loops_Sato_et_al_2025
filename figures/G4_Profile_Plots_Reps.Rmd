@@ -1,0 +1,121 @@
+---
+title: "G4 CUT&Tag analysis mESC (WT, FANCJ KO, DHX36 KO, DKO)"
+output: html_notebook
+---
+
+Simon Elsässer, Karolinska Institutet (2023)
+
+### Profile plots of promoters, enhancders and significant peaks determined by DESeq2.
+
+```{r fig.width=6, fig.height=3}
+bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+
+library("wigglescout")
+library("ggpubr")
+library("ggplot2")
+library("DESeq2")
+library("dplyr")
+library("ggrastr")
+
+clean <- function (fn) {
+  fn <- gsub(pattern = ".+/", "", x = fn)
+  fn <- gsub(pattern = ".mm9.+", "", x = fn)
+  fn <- gsub(pattern = ".mm39.+", "", x = fn)
+  fn <- gsub(pattern = "_S.+", "", x = fn)
+  fn <- gsub(pattern = "_combined.+", "", x = fn)
+  fn <- gsub(pattern = "G4 CnT ", "", x = fn)
+  fn <- gsub(pattern = "_batch2", "", x = fn)
+  fn <- gsub(pattern = "-", " ", x = fn)
+  fn <- gsub(pattern = "_", " ", x = fn)
+  fn <- gsub(pattern = " HA ", " ", x = fn)
+  fn <- gsub(pattern = "D1D6", "FANCJ-/-", x = fn)
+  fn <- gsub(pattern = "P2D2", "DHX36-/-", x = fn)
+  fn <- gsub(pattern = "P3D4", "FANCJ-/-DHX36-/-", x = fn)
+  return(fn)
+}
+
+BWs <- paste0(bw_dir,list.files(bw_dir,pattern="G4_.+R..bw"))
+
+mypal <-c("cornflowerblue","orange","red2","#505050")
+mypal3 <-c("cornflowerblue","cornflowerblue","cornflowerblue","orange","orange","orange","red2","red","red2","black","black","black")
+mypal2 <-c("cornflowerblue","cornflowerblue","orange","orange","red2","red","black","black")
+```
+
+## DHX36-/- vs WT significant peaks
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal3, verbose=F)
+```
+
+
+## FANCJ-/- vs WT significant peaks
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)
+```
+
+## DKO-/- vs WT significant peaks
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)
+```
+
+
+## DKO-/- vs WT significant peaks
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+BWs <- paste0(bw_dir,list.files(bw_dir,pattern="G4_.+_combined.unique.bw"))
+plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig_lfc_base_cutoff.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)
+```
+
+## DKO-/- vs WT significant peaks
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_combined_min3rep_not_WT.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)
+```
+# #non-significant Peaks
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)
+```
+
+## Active Promoters
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs,loci = "../genome/genes_hi_1-10kb.mm39.bed", mode="start", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)
+```
+
+
+## Active Enhancers
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs,loci = "../genome/ESC_Enhancer_CruzMolina.active.mm39.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)
+```
+
+```{r fig.width=2, fig.height=2}
+cov_proHi <- bw_loci(BWs, loci = "../genome/genes_hi_lt10kb.mm39.bed",labels = clean(BWs))
+
+df <- as.data.frame(cov_proHi)[6:9]
+colnames(df) <- c("FANCJ","DHX36","DKO","WT")
+ggscatter(df,x ="WT",y="DKO",size = 0.8, alpha=0.5) + geom_abline(slope = 1, intercept = 0, linetype="dashed", size=0.1)
+```
+
+```{r fig.width=2, fig.height=2}
+mdf <- melt(df)
+
+ggviolin(mdf, x="variable",y="value",fill="variable",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,15))
+```
+
+
+
+
+## R loops
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig//"
+BWs_Rloop <- paste0(bw_dir,list.files(bw_dir,pattern="Rloop_.+_combined.bw"))
+plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F)
+```
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F)
+```
+
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F)
+```
+
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F)
+```
