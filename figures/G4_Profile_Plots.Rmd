@@ -43,20 +43,20 @@ mypal2 <-c("cornflowerblue","cornflowerblue","orange","orange","red2","red","bla
 
 ## DHX36-/- vs WT significant peaks
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
-plot_profile_G4_DHX36 <- plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,16))
+plot_profile_G4_DHX36 <- plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,40))
 plot_profile_G4_DHX36
 ```
 
 
 ## FANCJ-/- vs WT significant peaks
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
-plot_profile_G4_FANCJ <- plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,16))
+plot_profile_G4_FANCJ <- plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,40))
 plot_profile_G4_FANCJ
 ```
 
 ## DKO-/- vs WT significant peaks
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
-plot_profile_G4_DKO <- plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)  + scale_y_continuous(limits=c(0,16))
+plot_profile_G4_DKO <- plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)  + scale_y_continuous(limits=c(0,40))
 plot_profile_G4_DKO
 ```
 
@@ -64,7 +64,7 @@ plot_profile_G4_DKO
 ## DKO-/- vs WT significant peaks
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
 BWs <- paste0(bw_dir,list.files(bw_dir,pattern="G4_.+_combined.unique.bw"))
-plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig_lfc_base_cutoff.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)  + scale_y_continuous(limits=c(0,16))
+plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig_lfc_base_cutoff.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)  + scale_y_continuous(limits=c(0,40))
 ```
 
 ## MACS peak intersect not called in WT
@@ -73,7 +73,7 @@ plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_combined_min3rep_not_WT.bed", 
 ```
 # #non-significant Peaks
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
-plot_profile_G4_nonsig <- plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)  + scale_y_continuous(limits=c(0,16))
+plot_profile_G4_nonsig <- plot_bw_profile(bwfiles = BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F)  + scale_y_continuous(limits=c(0,40))
 plot_profile_G4_nonsig
 ```
 
@@ -83,22 +83,22 @@ plot_profile_G4_proact <- plot_bw_profile(bwfiles = BWs,loci = "../genome/genes_
 plot_profile_G4_proact
 ```
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
-plot_profile_G4_probiv <- plot_bw_profile(bwfiles = BWs,loci = "../genome/K27_bivalent_genes.mm39.bed", mode="start", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,18))
+plot_profile_G4_probiv <- plot_bw_profile(bwfiles = BWs,loci = "../genome/K27_bivalent_genes.mm39.bed", mode="start", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,40))
 plot_profile_G4_probiv
 ```
 
 ## Active Enhancers
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
-plot_profile_G4_enhact <- plot_bw_profile(bwfiles = BWs,loci = "../genome/ESC_Enhancer_CruzMolina.active.mm39.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,16))
+plot_profile_G4_enhact <- plot_bw_profile(bwfiles = BWs,loci = "../genome/ESC_Enhancer_CruzMolina.active.mm39.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,40))
 plot_profile_G4_enhact
 ```
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
-plot_profile_G4_enhpri <- plot_bw_profile(bwfiles = BWs,loci = "../genome/ESC_Enhancer_CruzMolina.primed.mm39.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,16))
+plot_profile_G4_enhpri <- plot_bw_profile(bwfiles = BWs,loci = "../genome/ESC_Enhancer_CruzMolina.primed.mm39.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,25))
 plot_profile_G4_enhpri
 ```
 
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
-plot_profile_G4_enhpoi <- plot_bw_profile(bwfiles = BWs,loci = "../genome/ESC_Enhancer_CruzMolina.poised.mm39.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,16))
+plot_profile_G4_enhpoi <- plot_bw_profile(bwfiles = BWs,loci = "../genome/ESC_Enhancer_CruzMolina.poised.mm39.bed", mode="center", labels = clean(BWs),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,40))
 plot_profile_G4_enhpoi
 ```
 
@@ -118,7 +118,7 @@ ggsave("plots/profile_G4_EnhAct.pdf",plot_profile_G4_enhact,width = 3, height= 3
 bed_src <- read.table("../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed", header = F, sep = "\t")
 h1 <- bw_heatmap(BWs[4],loci="../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed", mode="center")
 ord <- order(bed_src$V5 * 1000 + rowMeans(h1[[1]]))
-zmax <- 30
+zmax <- 40
 p1 <- plot_bw_heatmap(BWs[4],"../peaks/G4_combined_min3rep.bed", mode="center", verbose=F,zmax = zmax, order_by = ord)
 p2 <- plot_bw_heatmap(BWs[2],"../peaks/G4_combined_min3rep.bed", mode="center", verbose=F,zmax = zmax, order_by = ord)
 p3 <- plot_bw_heatmap(BWs[1],"../peaks/G4_combined_min3rep.bed", mode="center", verbose=F,zmax = zmax, order_by = ord)
@@ -135,7 +135,7 @@ ggsave("panels/heatmap_G4.pdf",plot_heatmap_G4,width = 6, height= 3)
 ``` 
 
 ```{r fig.width=8, fig.height=3}
-
+library(cowplot)
 p <- ggdraw() +
   draw_plot(plot_profile_G4_DHX36, x = 0, y = 0, width = .33, height = 1) +
   draw_plot(plot_profile_G4_nonsig, x = .33, y = 0, width = .33, height = 1) +
@@ -175,21 +175,21 @@ ggsave("panels/heatmap_G4_peaks_pro_enh.pdf",p,width=10, height=5)
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
 bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig//"
 BWs_Rloop <- paste0(bw_dir,list.files(bw_dir,pattern="Rloop_.+_combined.bw"))
-plot_profile_Rloop_DKO <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,10))
+plot_profile_Rloop_DKO <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F, remove_top=0.001) + scale_y_continuous(limits=c(0,15))
 plot_profile_Rloop_DKO 
 ```
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
-plot_profile_Rloop_DHX36 <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,10))
+plot_profile_Rloop_DHX36 <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,15))
 plot_profile_Rloop_DHX36
 ```
 
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
-plot_profile_Rloop_FANCJ <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,10))
+plot_profile_Rloop_FANCJ <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,15))
 plot_profile_Rloop_FANCJ
 ```
 
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
-plot_profile_Rloop_nonsig <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,10))
+plot_profile_Rloop_nonsig <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,15))
 plot_profile_Rloop_nonsig
 ```
 
@@ -203,7 +203,7 @@ ggsave("plots/profile_Rloop_nonsig.pdf",plot_profile_Rloop_nonsig,width = 3, hei
 
 ```{r fig.width=6, fig.height=3, error=F,echo=F,prompt=F,warning=F}
 
-zmax <- 20
+zmax <- 25
 
 r1 <- plot_bw_heatmap(BWs_Rloop[4],"../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed", mode="center", verbose=F,zmax = zmax, order_by = ord)
 r2 <- plot_bw_heatmap(BWs_Rloop[2],"../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed", mode="center", verbose=F,zmax = zmax, order_by = ord)
@@ -239,11 +239,14 @@ ggsave("panels/peak_Rloop_profiles.pdf",p,width=8, height=3)
 
 
 ```{r fig.width=2, fig.height=2}
-cov_proHi <- bw_loci(BWs, loci = "../genome/genes_hi_lt10kb.mm39.bed",labels = clean(BWs))
+cov_proHi <- bw_loci(BWs, loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed",labels = clean(BWs))
+covR_proHi <- bw_loci(BWs_Rloop, loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed",labels = clean(BWs))
 
-df <- as.data.frame(cov_proHi)[6:9]
-colnames(df) <- c("FANCJ","DHX36","DKO","WT")
-ggscatter(df,x ="WT",y="DKO",size = 0.8, alpha=0.5) + geom_abline(slope = 1, intercept = 0, linetype="dashed", size=0.1)
+df <- cbind(as.data.frame(cov_proHi)[6:9],as.data.frame(covR_proHi)[6:9])
+
+colnames(df) <- c("FANCJ","DHX36","DKO","WT","R_FANCJ","R_DHX36","R_DKO","R_WT")
+df2 <- log2(df) 
+ggscatter(df,x ="WT",y="R_WT",size = 0.2, alpha=0.1) + geom_abline(slope = 1, intercept = 0, linetype="dashed", size=0.1) + coord_cartesian(xlim=c(0,100),ylim=c(0,100))
 ```
 
 ```{r fig.width=2, fig.height=2}
