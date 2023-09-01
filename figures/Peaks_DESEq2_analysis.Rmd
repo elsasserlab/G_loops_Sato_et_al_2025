@@ -280,7 +280,7 @@ p <- ggdraw() +
   draw_plot_label(label = c("a", "b", "c","d","e","f"), size = 15,
                   x = c(0, 0.33, 0.66, 0, 0.33, 0.66), y = c(1, 1, 1, 0.5, 0.5, 0.5))
 p
-ggsave("panels/peaks_DESeq2.pdf",p,width=10, height=6)
+ggsave("panels/peaks_DESeq2.pdf",p)
 ``` 
 
 ```{r}
@@ -308,37 +308,37 @@ mdf$cond[grep("DHX",mdf$variable)] <- "DHX36-/-"
 mdf$cond[grep("FAN",mdf$variable)] <- "FANCJ-/-"
 mdf$cond[grep("DKO",mdf$variable)] <- "DHX36-/-FANCJ-/-"
 plot_viol_rep_all_peaks <- ggviolin(mdf, x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
-  coord_cartesian(ylim=c(0,30))
+  coord_cartesian(ylim=c(0,50))
 plot_viol_rep_all_peaks
 ```
 
 ```{r fig.height=2, fig.width=3}
 plot_viol_rep_DHX36_peaks <- ggviolin(mdf[mdf$DHX36_sig,], x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
-  coord_cartesian(ylim=c(0,30))
+  coord_cartesian(ylim=c(0,50))
 plot_viol_rep_DHX36_peaks
 ```
 
 ```{r fig.height=2, fig.width=3}
 ggviolin(mdf[mdf$FANCJ_sig,], x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
-  coord_cartesian(ylim=c(0,30))
+  coord_cartesian(ylim=c(0,50))
 ```
 
 ```{r fig.height=2, fig.width=3}
 plot_viol_rep_DKO_peaks <- ggviolin(mdf[mdf$DKO_sig,], x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
-  coord_cartesian(ylim=c(0,30))
+  coord_cartesian(ylim=c(0,50))
 plot_viol_rep_DKO_peaks
 ```
 ```{r fig.height=2, fig.width=3}
 plot_viol_rep_nonsig_peaks <- ggviolin(mdf[mdf$non_sig,], x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
-  coord_cartesian(ylim=c(0,30))
+  coord_cartesian(ylim=c(0,50))
 plot_viol_rep_nonsig_peaks
 ```
 
 ```{r}
-ggsave("plots/peaks_DESeq2_viol_rep_all.pdf",plot_viol_rep_all_peaks,width = 2, height= 3)
-ggsave("plots/peaks_DESeq2_viol_rep_DKO.pdf",plot_viol_rep_DKO_peaks,width = 2, height= 3)
-ggsave("plots/peaks_DESeq2_viol_rep_DHX36.pdf",plot_viol_rep_DHX36_peaks,width = 2, height= 3)
-ggsave("plots/peaks_DESeq2_viol_rep_nonsig.pdf",plot_viol_rep_nonsig_peaks,width = 2, height= 3)
+ggsave("plots/peaks_DESeq2_viol_rep_all.pdf",plot_viol_rep_all_peaks)
+ggsave("plots/peaks_DESeq2_viol_rep_DKO.pdf",plot_viol_rep_DKO_peaks)
+ggsave("plots/peaks_DESeq2_viol_rep_DHX36.pdf",plot_viol_rep_DHX36_peaks)
+ggsave("plots/peaks_DESeq2_viol_rep_nonsig.pdf",plot_viol_rep_nonsig_peaks)
 ``` 
 
 ```{r fig.height=2, fig.width=3}
@@ -441,7 +441,7 @@ p <- ggdraw() +
   draw_plot_label(label = c("a", "b", "c"), size = 15,
                   x = c(0, 0.2, 0.6), y = c(1, 0.8, 0.8))
 p
-ggsave("panels/peak_anno_violin_v1.pdf",p,width=8, height=4)
+ggsave("panels/peak_anno_violin_v1.pdf",p)
 ``` 
 ```{r fig.width=8, fig.height=3}
 
@@ -452,5 +452,5 @@ p <- ggdraw() +
   draw_plot_label(label = c("a", "b", "c"), size = 15,
                   x = c(0, 0.4, 0.4), y = c(1, 1, 0.5))
 p
-ggsave("panels/peak_anno_violin_v2.pdf",p,width=8, height=3)
+ggsave("panels/peak_anno_violin_v2.pdf",p)
 ``` 
