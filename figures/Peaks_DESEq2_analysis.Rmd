@@ -178,6 +178,18 @@ data_DKO$mean <- log10(data_DKO$mean)
 ggscatter(data_DHX36,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
 plot_MA_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
 ```
+```{r fig.width=2, fig.height=2}
+data_DHX36$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
+data_DHX36$cov.DHX36 <- rowMeans(as.data.frame(cov.DHX36)[,6:8])
+ggscatter(data_DHX36,x ="cov.WT",y="cov.DHX36",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1])) + scale_x_continuous(trans="log",limits = c(0.5,400)) + scale_y_continuous(trans="log",limits = c(0.5,400)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
+plot_XY_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+```{r fig.width=2, fig.height=2}
+data_DHX36$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
+data_DHX36$cov.DHX36 <- rowMeans(as.data.frame(cov.DHX36)[,6:8])
+ggscatter(data_DHX36,x ="cov.WT",y="cov.DHX36",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1])) + scale_x_continuous(limits = c(-10,50)) + scale_y_continuous(limits = c(-10,50)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
+plot_XY_DHX36_zoom <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
 
 ```{r fig.width=2, fig.height=2}
 ggscatter(data_FANCJ,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[2])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
@@ -185,10 +197,23 @@ plot_MA_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600)
 ```
 
 ```{r fig.width=2, fig.height=2}
+data_FANCJ$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
+data_FANCJ$cov.FANCJ <- rowMeans(as.data.frame(cov.FANCJ)[,6:8])
+ggscatter(data_FANCJ,x ="cov.WT",y="cov.FANCJ",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[2])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + scale_x_continuous(trans="log",limits = c(0.5,400)) + scale_y_continuous(trans="log",limits = c(0.5,400)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
+plot_XY_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+
+```{r fig.width=2, fig.height=2}
 ggscatter(data_DKO,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
 plot_MA_DKO <- rasterize(last_plot(), layers='Point', dpi=600) 
 ```
 
+```{r fig.width=2, fig.height=2}
+data_DKO$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
+data_DKO$cov.DKO <- rowMeans(as.data.frame(cov.DKO)[,6:8])
+ggscatter(data_DKO,x ="cov.WT",y="cov.DKO",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + scale_x_continuous(trans="log",limits = c(0.5,400)) + scale_y_continuous(trans="log",limits = c(0.5,400)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
+plot_XY_DKO <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
 
 ```{r fig.width=2, fig.height=2}
 data_DKO$lfc_DHX36 <- data_DHX36$lfc
@@ -281,6 +306,23 @@ p <- ggdraw() +
                   x = c(0, 0.33, 0.66, 0, 0.33, 0.66), y = c(1, 1, 1, 0.5, 0.5, 0.5))
 p
 ggsave("panels/peaks_DESeq2.pdf",p)
+``` 
+```{r fig.width=6, fig.height=4}
+library(cowplot)
+dir.create("./panels",showWarnings = F)
+
+library("cowplot")
+p <- ggdraw() +
+  draw_plot(plot_MA_DHX36, x = 0, y = 0.5, width = .33, height = .5) +
+  draw_plot(plot_MA_FANCJ, x = .33, y = 0.5, width = .33, height = .5) +
+  draw_plot(plot_MA_DKO, x = 0.66, y = 0.5, width = .33, height = 0.5) +
+  draw_plot(plot_XY_DHX36, x = 0, y = 0, width = 0.33, height = 0.5) +
+  draw_plot(plot_XY_FANCJ, x = 0.33, y = 0, width = 0.33, height = 0.5) +
+  draw_plot(plot_XY_DKO, x = 0.66, y = 0, width = 0.33, height = 0.5) +
+  draw_plot_label(label = c("a", "b", "c","d","e","f"), size = 15,
+                  x = c(0, 0.33, 0.66, 0, 0.33, 0.66), y = c(1, 1, 1, 0.5, 0.5, 0.5))
+p
+ggsave("panels/peaks_DESeq2_scatter.pdf",p)
 ``` 
 
 ```{r}
