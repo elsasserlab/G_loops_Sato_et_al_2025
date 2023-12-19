@@ -9,6 +9,7 @@ coord <- read.table("genes_mm39.txt",header = T,sep = "\t")
 gl.DKOspec <- read.table("1.list_genes_names_lncRNA_RNAseq_DKOspec.txt")[,1]
 gl.common <- read.table("2.list_genes_names_lncRNA_RNAseq_NonChangedDKOvsWT.txt")[,1]
 gl.DKOup <- read.table("3.list_genes_names_lncRNA_RNAseq_UpregulatedDKOvsWT.txt")[,1]
+gl.WTspec <- read.table("4.list_genes_names_lncRNA_RNAseq_WTspec.txt")[,1]
 ```
 
 ```{r}
@@ -53,7 +54,32 @@ bed.DKOup <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name),
                         
 write.table(bed.DKOup, file="lncRNA_DKOup.bed",col.names = F,row.names = F, quote = F, sep = "\t")
 ```
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
+```{r}
+
+match<-coord[coord$Gene.name %in% gl.DKOup,]
+
+bed.DKOup <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcript.start..bp., 
+                           end=match$Transcript.end..bp., 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub("1","+",gsub("-1","-",match$Strand)))
+                        
+write.table(bed.DKOup, file="lncRNA_DKOup.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+```
+
+```{r}
+
+match<-coord[coord$Gene.name %in% gl.WTspec,]
+
+bed.WTspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcript.start..bp., 
+                           end=match$Transcript.end..bp., 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub("1","+",gsub("-1","-",match$Strand)))
+                        
+write.table(bed.WTspec, file="lncRNA_WTspec.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+```
