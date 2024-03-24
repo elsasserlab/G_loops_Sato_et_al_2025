@@ -1,0 +1,549 @@
+---
+title: "G4 CUT&Tag analysis mESC (WT, FANCJ KO, DHX36 KO, DKO)"
+output: html_notebook
+---
+
+Simon Elsässer, Karolinska Institutet (2023)
+
+### DESeq2 analysis of peak universe (joint peak set called in any condition, must be called in all three replicates, MACS3)
+
+
+```{r fig.width=6, fig.height=3}
+bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+chromhmm <- "../genome/ESC_10_segments.mm39.bed"
+
+library("wigglescout")
+library("ggpubr")
+library("ggplot2")
+library("DESeq2")
+library("dplyr")
+library("ggrastr")
+library("reshape2")
+
+clean <- function (fn) {
+  fn <- gsub(pattern = ".+/", "", x = fn)
+  fn <- gsub(pattern = ".mm9.+", "", x = fn)
+  fn <- gsub(pattern = ".mm39.+", "", x = fn)
+  fn <- gsub(pattern = "_S.+", "", x = fn)
+  fn <- gsub(pattern = ".scaled.bw", "", x = fn)
+  fn <- gsub(pattern = ".unscaled.bw", "", x = fn)
+  fn <- gsub(pattern = "_batch2", "", x = fn)
+  fn <- gsub(pattern = "-", " ", x = fn)
+  fn <- gsub(pattern = "_", " ", x = fn)
+  fn <- gsub(pattern = " HA ", " ", x = fn)
+  fn <- gsub(pattern = "D1D6", "FANCJ-/-", x = fn)
+  fn <- gsub(pattern = "P2D2", "DHX36-/-", x = fn)
+  fn <- gsub(pattern = "P3D4", "FANCJ-/-DHX36-/-", x = fn)
+  return(fn)
+}
+
+BWs <- paste0(bw_dir,list.files(bw_dir,pattern="G4_.+R.\\.bw"))
+
+mypal <-c("cornflowerblue","orange","red2","#505050")
+mypal3 <-c("cornflowerblue","cornflowerblue","cornflowerblue","orange","orange","orange","red2","red2","red2","505050","505050","505050")
+```
+
+```{r}
+bw_granges_diff_analysis <- function(granges_c1,
+                                     granges_c2,
+                                     label_c1,
+                                     label_c2,
+                                     estimate_size_factors = FALSE,
+                                     as_granges = FALSE) {
+
+  # Bind first, get numbers after
+  names_values <- NULL
+  fields <- names(mcols(granges_c1))
+
+  if ("name" %in% fields) {
+    names_values <- mcols(granges_c1)[["name"]]
+    granges_c1 <- granges_c1[, fields[fields != "name"]]
+  }
+
+  fields <- names(mcols(granges_c2))
+  if ("name" %in% fields) {
+    granges_c2 <- granges_c2[, fields[fields != "name"]]
+  }
+
+  cts_df <- cbind(data.frame(granges_c1), mcols(granges_c2))
+
+  if (! is.null(names_values)) {
+    rownames(cts_df) <- names_values
+  }
+
+  # Needs to drop non-complete cases and match rows
+  complete <- complete.cases(cts_df)
+  cts_df <- cts_df[complete, ]
+
+  values_df <- cts_df[, 6:ncol(cts_df)] %>% dplyr::select(where(is.numeric))
+  cts <- get_nreads_columns(values_df)
+
+  condition_labels <- c(rep(label_c1, length(mcols(granges_c1))),
+                        rep(label_c2, length(mcols(granges_c2))))
+
+
+  coldata <- data.frame(colnames(cts), condition = as.factor(condition_labels))
+
+  dds <- DESeq2::DESeqDataSetFromMatrix(countData = cts,
+                                colData = coldata,
+                                design = ~ condition,
+                                rowRanges = granges_c1[complete, ])
+
+
+  if (estimate_size_factors == TRUE) {
+    dds <- DESeq2::estimateSizeFactors(dds)
+  }
+  else {
+    # Since files are scaled, we do not want to estimate size factors
+    sizeFactors(dds) <- c(rep(1, ncol(cts)))
+  }
+
+  dds <- DESeq2::estimateDispersions(dds)
+  dds <- DESeq2::nbinomWaldTest(dds)
+
+  if (as_granges) {
+    result <- DESeq2::results(dds, format = "GRanges",alpha = 0.01)
+    if (!is.null(names_values)) {
+      result$name <- names_values[complete]
+    }
+
+  }
+  else {
+    # result <- results(dds, format="DataFrame")
+    result <- dds
+  }
+
+  result
+}
+
+get_nreads_columns <- function(df, length_factor = 100) {
+  # Convert mean coverages to round integer read numbers
+  cts <- as.matrix(df)
+  cts <- as.matrix(cts[complete.cases(cts),])
+  cts <- round(cts*length_factor)
+  cts
+}
+```
+
+```{r}
+
+peak_universe <- "../peaks/G4_combined_min3rep.bed"
+
+BWs.WT <- BWs[grep("WT",BWs)]
+BWs.FANCJ <- BWs[grep("D1D6",BWs)]
+BWs.DHX36 <- BWs[grep("P2D2",BWs)]
+BWs.DKO <- BWs[grep("P3D4",BWs)]
+  
+# Calculate here some loci or bins
+cov.WT <- bw_loci(BWs.WT, loci = peak_universe)
+cov.DHX36 <- bw_loci(BWs.DHX36, loci = peak_universe)
+cov.FANCJ <- bw_loci(BWs.FANCJ, loci = peak_universe)
+cov.DKO <- bw_loci(BWs.DKO, loci = peak_universe)
+
+cov.WT$name <- paste0("peak_",1:length(cov.WT))
+cov.DHX36$name <- paste0("peak_",1:length(cov.DHX36))
+cov.FANCJ$name <- paste0("peak_",1:length(cov.FANCJ))
+cov.DKO$name <- paste0("peak_",1:length(cov.DKO))
+```
+
+```{r}
+diff_DHX36 <- bw_granges_diff_analysis(cov.WT, cov.DHX36,
+                                     "WT", "DHX36KO")
+diff_FANCJ <- bw_granges_diff_analysis(cov.WT, cov.FANCJ,
+                                     "WT", "FANCJ")
+diff_DKO <- bw_granges_diff_analysis(cov.WT, cov.DKO,
+                                     "WT", "DKO")
+
+
+# This takes care of low conts and things like this, but you can also use
+# diff_results as is for the things below
+lfc_DHX36 <- DESeq2::lfcShrink(diff_DHX36, coef = "condition_WT_vs_DHX36KO", type="apeglm")
+lfc_FANCJ <- DESeq2::lfcShrink(diff_FANCJ, coef = "condition_WT_vs_FANCJ", type="apeglm")
+lfc_DKO <- DESeq2::lfcShrink(diff_DKO, coef = "condition_WT_vs_DKO", type="apeglm")
+
+data_DHX36 <- plotMA(lfc_DHX36, returnData = T)
+data_DHX36$lfc <- -data_DHX36$lfc
+data_DHX36$mean <- log10(data_DHX36$mean)
+
+data_FANCJ <- plotMA(lfc_FANCJ, returnData = T)
+data_FANCJ$lfc <- -data_FANCJ$lfc
+data_FANCJ$mean <- log10(data_FANCJ$mean)
+
+data_DKO <- plotMA(lfc_DKO, returnData = T)
+data_DKO$lfc <- -data_DKO$lfc
+data_DKO$mean <- log10(data_DKO$mean)
+```
+
+
+```{r fig.width=2, fig.height=2}
+ggscatter(data_DHX36,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
+plot_MA_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+```{r fig.width=2, fig.height=2}
+data_DHX36$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
+data_DHX36$cov.DHX36 <- rowMeans(as.data.frame(cov.DHX36)[,6:8])
+ggscatter(data_DHX36,x ="cov.WT",y="cov.DHX36",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1])) + scale_x_continuous(trans="log",limits = c(0.5,400)) + scale_y_continuous(trans="log",limits = c(0.5,400)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
+plot_XY_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+```{r fig.width=2, fig.height=2}
+data_DHX36$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
+data_DHX36$cov.DHX36 <- rowMeans(as.data.frame(cov.DHX36)[,6:8])
+ggscatter(data_DHX36,x ="cov.WT",y="cov.DHX36",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1])) + scale_x_continuous(limits = c(-10,50)) + scale_y_continuous(limits = c(-10,50)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
+plot_XY_DHX36_zoom <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+
+```{r fig.width=2, fig.height=2}
+ggscatter(data_FANCJ,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[2])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
+plot_MA_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+
+```{r fig.width=2, fig.height=2}
+data_FANCJ$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
+data_FANCJ$cov.FANCJ <- rowMeans(as.data.frame(cov.FANCJ)[,6:8])
+ggscatter(data_FANCJ,x ="cov.WT",y="cov.FANCJ",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[2])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + scale_x_continuous(trans="log",limits = c(0.5,400)) + scale_y_continuous(trans="log",limits = c(0.5,400)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
+plot_XY_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+
+```{r fig.width=2, fig.height=2}
+ggscatter(data_DKO,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
+plot_MA_DKO <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+
+```{r fig.width=2, fig.height=2}
+data_DKO$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
+data_DKO$cov.DKO <- rowMeans(as.data.frame(cov.DKO)[,6:8])
+ggscatter(data_DKO,x ="cov.WT",y="cov.DKO",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + scale_x_continuous(trans="log",limits = c(0.5,400)) + scale_y_continuous(trans="log",limits = c(0.5,400)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
+plot_XY_DKO <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+
+```{r fig.width=2, fig.height=2}
+data_DKO$lfc_DHX36 <- data_DHX36$lfc
+data_DKO$lfc_FANCJ <- data_FANCJ$lfc
+ggscatter(data_DKO,x ="lfc_DHX36",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3]))+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5))
+plot_LFC_DKO_vs_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600)
+```
+```{r fig.width=2, fig.height=2}
+ggscatter(data_DKO,x ="lfc_FANCJ",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3]))+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5))
+plot_LFC_DKO_vs_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600)
+```
+```{r fig.width=2, fig.height=2}
+data_DHX36$lfc_DKO <- data_DKO$lfc
+ggscatter(data_DHX36,x ="lfc",y="lfc_DKO",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1]))+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5))
+```
+
+```{r}
+bed <- as.data.frame(cov.DHX36)[,1:3]
+
+results_table <- data.frame(chr=bed$seqnames,start=bed$start,end=bed$end,name=cov.WT$name, baseMean=lfc_DKO$baseMean,DHX36=data_DHX36$isDE,FANCJ=data_FANCJ$isDE,DKO=data_DKO$isDE,DHX36lfc=data_DHX36$lfc,FANCJlfc=data_FANCJ$lfc,DKOlfc=data_DKO$lfc,dir=".")
+
+results_table$nonsig <- !(results_table$DHX36 | results_table$FANCJ | results_table$DKO)
+
+results_table$sig <- factor("lowlfc", levels=c("nonsig","lowlfc","FANCJ","DHX36","DKO"))
+results_table$sig[(results_table$nonsig)] <- "nonsig"
+results_table$sig[(results_table$DKO & results_table$DKOlfc>1)] <- "DKO"
+results_table$sig[(results_table$DHX36 & results_table$DHX36lfc>1)] <- "DHX36"
+results_table$sig[(results_table$FANCJ & results_table$FANCJlfc>1)] <- "FANCJ"
+
+write.table(results_table,"G4_CnT_combined_peaks_DESeq_results.txt", row.names = F, col.names = T,quote = F, sep = "\t")
+```
+
+```{r}
+DHX36_bed <- results_table[(results_table$DHX36 & results_table$DHX36lfc>1),c(1,2,3,4,9,12)]
+write.table(DHX36_bed,"../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+
+FANCJ_bed <- results_table[(results_table$FANCJ & results_table$FANCJlfc>1),c(1,2,3,4,10,12)]
+write.table(FANCJ_bed,"../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+
+DKO_bed <- results_table[(results_table$DKO & results_table$DKOlfc>1),c(1,2,3,4,11,12)]
+write.table(DKO_bed,"../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+
+nonsig_bed <- results_table[results_table$nonsig ,c(1,2,3,4,11,12)]
+write.table(nonsig_bed,"../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+
+DKO_bed_top <- results_table[(results_table$DKO==TRUE & results_table$DKOlfc>2 & results_table$baseMean > 100),c(1,2,3,4,11,12)]
+write.table(DKO_bed_top,"../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig_lfc_base_cutoff.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+
+
+write.table(cbind(results_table[,c(1,2,3)],results_table$sig,as.numeric(results_table$sig),"."),"../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+```
+
+```{r fig.width=2, fig.height=2}
+library(eulerr)
+v <- list(DHX36=DHX36_bed$name,FANCJ=FANCJ_bed$name,DKO=DKO_bed$name)
+plot_Venn_all <- plot(euler(v),quantities=T, border="black")
+plot_Venn_all
+```
+```{r fig.width=2, fig.height=2}
+library(eulerr)
+DKOneg <- results_table[(results_table$DKO==TRUE & results_table$DKOlfc< -1),c(4)]
+v <- list(all=cov.WT$name,DKOneg=DKOneg,DKO=DKO_bed$name)
+plot_Venn_DKO <- plot(euler(v),quantities=T)
+plot_Venn_DKO
+```
+```{r}
+dir.create("./plots",showWarnings = F)
+ggsave("plots/peaks_DESeq2_MA_DHX36.pdf",plot_MA_DHX36,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_MA_FANCJ.pdf",plot_MA_FANCJ,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_MA_DKO.pdf",plot_MA_DKO,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_LFC_DHX36.pdf",plot_LFC_DKO_vs_DHX36,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_LFC_FANCJ.pdf",plot_LFC_DKO_vs_FANCJ,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_Venn_KOs.pdf",plot_Venn_all,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_Venn_DKO_vs_all.pdf",plot_Venn_DKO,width = 4, height= 4)
+``` 
+
+```{r fig.width=6, fig.height=4}
+library(cowplot)
+dir.create("./panels",showWarnings = F)
+
+library("cowplot")
+p <- ggdraw() +
+  draw_plot(plot_MA_DHX36, x = 0, y = 0.5, width = .33, height = .5) +
+  draw_plot(plot_MA_FANCJ, x = .33, y = 0.5, width = .33, height = .5) +
+  draw_plot(plot_MA_DKO, x = 0.66, y = 0.5, width = .33, height = 0.5) +
+  draw_plot(plot_LFC_DKO_vs_DHX36, x = 0, y = 0, width = 0.33, height = 0.5) +
+  draw_plot(plot_LFC_DKO_vs_FANCJ, x = 0.33, y = 0, width = 0.33, height = 0.5) +
+  draw_plot(plot_Venn_all, x = 0.66, y = 0, width = 0.33, height = 0.5) +
+  draw_plot_label(label = c("a", "b", "c","d","e","f"), size = 15,
+                  x = c(0, 0.33, 0.66, 0, 0.33, 0.66), y = c(1, 1, 1, 0.5, 0.5, 0.5))
+p
+ggsave("panels/peaks_DESeq2.pdf",p)
+``` 
+```{r fig.width=6, fig.height=4}
+library(cowplot)
+dir.create("./panels",showWarnings = F)
+
+library("cowplot")
+p <- ggdraw() +
+  draw_plot(plot_MA_DHX36, x = 0, y = 0.5, width = .33, height = .5) +
+  draw_plot(plot_MA_FANCJ, x = .33, y = 0.5, width = .33, height = .5) +
+  draw_plot(plot_MA_DKO, x = 0.66, y = 0.5, width = .33, height = 0.5) +
+  draw_plot(plot_XY_DHX36, x = 0, y = 0, width = 0.33, height = 0.5) +
+  draw_plot(plot_XY_FANCJ, x = 0.33, y = 0, width = 0.33, height = 0.5) +
+  draw_plot(plot_XY_DKO, x = 0.66, y = 0, width = 0.33, height = 0.5) +
+  draw_plot_label(label = c("a", "b", "c","d","e","f"), size = 15,
+                  x = c(0, 0.33, 0.66, 0, 0.33, 0.66), y = c(1, 1, 1, 0.5, 0.5, 0.5))
+p
+ggsave("panels/peaks_DESeq2_scatter.pdf",p)
+``` 
+
+```{r}
+cov <- cbind( as.data.frame(cov.WT)[,1:8], 
+              as.data.frame(cov.DHX36)[,6:8], 
+              as.data.frame(cov.FANCJ)[,6:8], 
+              as.data.frame(cov.DKO)[,6:8])
+
+colnames(cov) <- c(colnames(cov)[1:5],"WT1","WT2","WT3","DHX1","DHX2","DHX3","FAN1","FAN2","FAN3","DKO1","DKO2","DKO3")
+
+rownames(cov) <- as.data.frame(cov.WT)$name
+
+cov$DHX36_sig <- rownames(cov) %in% DHX36_bed$name
+cov$FANCJ_sig <- rownames(cov) %in% FANCJ_bed$name
+cov$DKO_sig <- rownames(cov) %in% DKO_bed$name
+cov$non_sig <- with(cov, !(DHX36_sig | FANCJ_sig | DKO_sig))
+```
+
+```{r fig.height=2, fig.width=3}
+library(reshape2)
+mdf <- melt(data.frame(name=rownames(cov),cov[,6:21]))
+mdf <- mdf[mdf$value<500,]
+mdf$cond <- "WT"
+mdf$cond[grep("DHX",mdf$variable)] <- "DHX36-/-"
+mdf$cond[grep("FAN",mdf$variable)] <- "FANCJ-/-"
+mdf$cond[grep("DKO",mdf$variable)] <- "DHX36-/-FANCJ-/-"
+plot_viol_rep_all_peaks <- ggviolin(mdf, x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,50))
+plot_viol_rep_all_peaks
+```
+
+```{r fig.height=2, fig.width=3}
+plot_viol_rep_DHX36_peaks <- ggviolin(mdf[mdf$DHX36_sig,], x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,50))
+plot_viol_rep_DHX36_peaks
+```
+
+```{r fig.height=2, fig.width=3}
+ggviolin(mdf[mdf$FANCJ_sig,], x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,50))
+```
+
+```{r fig.height=2, fig.width=3}
+plot_viol_rep_DKO_peaks <- ggviolin(mdf[mdf$DKO_sig,], x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,50))
+plot_viol_rep_DKO_peaks
+```
+```{r fig.height=2, fig.width=3}
+plot_viol_rep_nonsig_peaks <- ggviolin(mdf[mdf$non_sig,], x="variable",y="value",fill="cond",palette = mypal, add="mean_sd") +
+  coord_cartesian(ylim=c(0,50))
+plot_viol_rep_nonsig_peaks
+```
+
+```{r}
+ggsave("plots/peaks_DESeq2_viol_rep_all.pdf",plot_viol_rep_all_peaks)
+ggsave("plots/peaks_DESeq2_viol_rep_DKO.pdf",plot_viol_rep_DKO_peaks)
+ggsave("plots/peaks_DESeq2_viol_rep_DHX36.pdf",plot_viol_rep_DHX36_peaks)
+ggsave("plots/peaks_DESeq2_viol_rep_nonsig.pdf",plot_viol_rep_nonsig_peaks)
+``` 
+
+```{r fig.height=2, fig.width=3}
+sdf <- aggregate(value ~ name + cond, data=mdf, FUN="mean")
+sdf$cond <- factor(sdf$cond,levels=c("WT","DHX36-/-","FANCJ-/-","DHX36-/-FANCJ-/-"))
+ggviolin(sdf, x="cond",y="value",fill="cond",palette = mypal[c(4,1,2,3)], add="mean_sd") +
+  coord_cartesian(ylim=c(0,50))
+```
+
+```{r fig.height=2, fig.width=3}
+sdf$DHX36_sig <- sdf$name %in% DHX36_bed$name
+sdf$FANCJ_sig <- sdf$name %in% FANCJ_bed$name
+sdf$DKO_sig <- sdf$name %in% DKO_bed$name
+sdf$DKO_top <- sdf$name %in% DKO_bed_top$name
+ggviolin(sdf[sdf$DHX36,], x="cond",y="value",fill="cond",palette = mypal[c(4,1,2,3)], add="mean_sd") +
+  coord_cartesian(ylim=c(0,75))
+```
+
+```{r fig.height=2, fig.width=3}
+ggviolin(sdf[sdf$FANCJ_sig,], x="cond",y="value",fill="cond",palette = mypal[c(4,1,2,3)], add="mean_sd") +
+  coord_cartesian(ylim=c(0,75))
+```
+
+```{r fig.height=2, fig.width=3}
+plot_viol_DKO_peaks <- ggviolin(sdf[sdf$DKO_sig,], x="cond",y="value",fill="cond",palette = mypal[c(4,1,2,3)], add="mean_sd") +
+  coord_cartesian(ylim=c(0,75))
+plot_viol_DKO_peaks
+```
+
+```{r fig.height=2, fig.width=3}
+ggviolin(sdf[sdf$DKO_top,], x="cond",y="value",fill="cond",palette = mypal[c(4,1,2,3)], add="mean_sd") +
+  coord_cartesian(ylim=c(0,75))
+```
+
+### annotate peak table
+```{r}
+library(bedscout)
+
+bed_peaks <- rtracklayer::import(peak_universe)
+chromhmm_gr <- rtracklayer::import(chromhmm)
+
+
+bed_peaks_annotated <- impute_feature(bed_peaks, chromhmm_gr, "name")
+bed_peaks_annotated_df <- as.data.frame(unique(bed_peaks_annotated))
+# If you want to export to BED file with rtracklayer then you
+# do need to explicitly overwrite the name:
+bed_peaks_annotated$name <- bed_peaks_annotated$feature
+rtracklayer::export(unique(bed_peaks_annotated), "../peaks/G4_CnT_combined_peaks_DESeq_annotated_v2.bed")
+
+chromhmm17_gr <- rtracklayer::import("../genome/ChromHMM17.chr9.mm39lift.bed")
+bed_peaks_hmm17 <- impute_feature(bed_peaks, chromhmm17_gr, "name")
+# If you want to export to BED file with rtracklayer then you
+# do need to explicitly overwrite the name:
+bed_peaks_hmm17$name <- bed_peaks_hmm17$feature
+bed_peaks_hmm17$score[is.na(bed_peaks_hmm17$score)] <- 0
+rtracklayer::export(unique(bed_peaks_hmm17), "../peaks/G4_CnT_combined_peaks_DESeq_annotated_ChromHMM17.bed")
+
+rmsk_gr <- rtracklayer::import("../genome/rmsk.lt200bp.mm39.bed")
+bed_peaks_rmsk <- impute_feature(bed_peaks, rmsk_gr, "name")
+# If you want to export to BED file with rtracklayer then you
+# do need to explicitly overwrite the name:
+bed_peaks_rmsk$name <- bed_peaks_rmsk$feature
+bed_peaks_rmsk$score[is.na(bed_peaks_rmsk$score)] <- 0
+rtracklayer::export(bed_peaks_rmsk, "../peaks/G4_CnT_combined_peaks_DESeq_annotated_rmsk.bed")
+
+bed_peaks_table <- cbind(bed_peaks_annotated_df,data.frame(baseMean=lfc_DKO$baseMean,DHX36=(data_DHX36$isDE & data_DHX36$lfc>1),FANCJ=(data_FANCJ$isDE & data_FANCJ$lfc>1),DKO=(data_DKO$isDE&data_DKO$lfc>1),DHX36lfc=data_DHX36$lfc,FANCJlfc=data_FANCJ$lfc,DKOlfc=data_DKO$lfc))
+
+write.table(bed_peaks_table,"G4_CnT_combined_peaks_DESeq_annotated_v2.txt", row.names = F, col.names = T,quote = F, sep = "\t")
+```
+
+```{r fig.height=2, fig.width=2}
+#read in - if you want to skip de novo generation
+bed_peaks_table <- read.table("G4_CnT_combined_peaks_DESeq_annotated_v2.txt", header = T, sep = "\t")
+
+vpal=colorRampPalette(c("cornflowerblue","orange","red2"))
+stats <- as.data.frame(table(bed_peaks_table$feature))
+ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
+```
+
+### DJ Peak Annotation
+```{r fig.height=2, fig.width=2}
+stats <- as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$DKO]))
+plot_donut_DJ <- ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
+plot_donut_DJ
+```
+
+### non-DJ Peak Annotation
+```{r fig.height=2, fig.width=2}
+stats <- as.data.frame(table(bed_peaks_table$feature[!bed_peaks_table$DKO & !bed_peaks_table$DHX36 & !bed_peaks_table$FANCJ]))
+plot_donut_nonDJ <- ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
+plot_donut_nonDJ
+```
+
+```{r fig.height=3, fig.width=4}
+vpal=colorRampPalette(c("lightgreen","cornflowerblue","orange","red2"))
+
+stats <- data.frame(as.data.frame(table(bed_peaks_table$feature))[1],as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$DKO]))[2],as.data.frame(table(bed_peaks_table$feature[!bed_peaks_table$DKO & !bed_peaks_table$DHX36 & !bed_peaks_table$FANCJ]))[2])
+
+colnames(stats) <- c("State","DJ","nonDJ")
+
+#stats$DHX36=stats$DJ/sum(stats$DJ)*100
+#stats$FANCJ=stats$nonDJ/sum(stats$nonDJ)*100
+
+mdf <- melt(stats)
+mdf$State <- factor(mdf$State,levels=levels(mdf$State)[c(1,3,5,7,4,6,10,8,9,2)])
+cols=c(vpal(11)[c(4,5,3,2,9,8,7)],"#DDDDDD","#EEEEEE",vpal(11)[10])
+plot_bar_chromhmm_anno <- ggbarplot(mdf,x = "variable",y="value",fill="State",palette =cols,  orientation = c("horizontal")) 
+plot_bar_chromhmm_anno
+```
+
+```{r fig.height=3, fig.width=4}
+stats$DJ=stats$DJ/sum(stats$DJ)*100
+stats$nonDJ=stats$nonDJ/sum(stats$nonDJ)*100
+
+mdf <- melt(stats)
+mdf$State <- factor(mdf$State,levels=levels(mdf$State)[c(1,3,5,7,4,6,10,8,9,2)])
+cols=c(vpal(11)[c(4,5,3,2,9,8,7)],"#DDDDDD","#EEEEEE",vpal(11)[10])
+plot_bar_chromhmm_anno_norm <- ggbarplot(mdf,x = "variable",y="value",fill="State",palette =cols,  orientation = c("horizontal")) 
+plot_bar_chromhmm_anno_norm
+```
+```{r}
+ggsave("plots/plot_bar_chromhmm.pdf",plot_bar_chromhmm_anno)
+ggsave("plots/plot_bar_chromhmm_rel.pdf",plot_bar_chromhmm_anno_norm)
+``` 
+
+```{r fig.height=4, fig.width=3}
+vpal=colorRampPalette(c("lightgreen","cornflowerblue","orange","red2"))
+
+stats <- data.frame(as.data.frame(table(bed_peaks_table$feature)),DHX36=as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$DHX36==TRUE]))[2],FANCJ=as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$FANCJ==TRUE]))[2],DKO=as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$DKO==TRUE]))[2])
+colnames(stats) <- c("State","Total","DHX36","FANCJ","DKO")
+
+stats$Total=stats$Total/sum(stats$Total)*100
+stats$DHX36=stats$DHX36/sum(stats$DHX36)*100
+stats$FANCJ=stats$FANCJ/sum(stats$FANCJ)*100
+stats$DKO=stats$DKO/sum(stats$DKO)*100
+mdf <- melt(stats)
+mdf$State <- factor(mdf$State,levels=levels(mdf$State)[c(1,3,5,7,4,6,10,8,9,2)])
+cols=c(vpal(11)[c(4,5,3,2,9,8,7)],"#DDDDDD","#EEEEEE",vpal(11)[10])
+plot_bar_chromhmm_anno <- ggbarplot(mdf,x = "variable",y="value",fill="State",palette =cols,label=mdf$State)
+plot_bar_chromhmm_anno
+```
+
+
+
+```{r fig.width=8, fig.height=3}
+p <- ggdraw() +
+  draw_plot(plot_bar_chromhmm_anno, x = 0, y = 0, width = .20, height = 1) +
+  draw_plot(plot_viol_rep_DKO_peaks, x = .2, y = 0, width = .40, height = 0.7) +
+  draw_plot(plot_viol_rep_nonsig_peaks, x = 0.6, y = 0, width = .40, height = 0.7) +
+  draw_plot_label(label = c("a", "b", "c"), size = 15,
+                  x = c(0, 0.2, 0.6), y = c(1, 0.8, 0.8))
+p
+ggsave("panels/peak_anno_violin_v1.pdf",p)
+``` 
+```{r fig.width=8, fig.height=3}
+
+p <- ggdraw() +
+  draw_plot(plot_bar_chromhmm_anno, x = 0, y = 0, width = .4, height = 1) +
+  draw_plot(plot_viol_rep_DKO_peaks, x = .4, y = 0.5, width = .60, height = 0.5) +
+  draw_plot(plot_viol_rep_nonsig_peaks, x = 0.4, y = 0, width = .60, height = 0.5) +
+  draw_plot_label(label = c("a", "b", "c"), size = 15,
+                  x = c(0, 0.4, 0.4), y = c(1, 1, 0.5))
+p
+ggsave("panels/peak_anno_violin_v2.pdf",p)
+``` 

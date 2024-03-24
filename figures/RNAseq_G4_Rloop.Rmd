@@ -45,6 +45,12 @@ mypal2 <-c("cornflowerblue","cornflowerblue","orange","orange","red2","red","bla
 ```
 
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
+
+
+
+```
+
+```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
 plot_profile_RNAseq_DKO_spec <- plot_bw_profile(bwfiles = BWs,loci = "../genelists//lncRNA_DKOspec.bed", mode="stretch", labels = clean(BWs),show_error=T,colors = mypal, verbose=F, remove_top=0.01) + scale_y_continuous(limits=c(0,40))
 plot_profile_RNAseq_DKO_spec
 ```
