@@ -248,6 +248,9 @@ write.table(results_table,"G4_CnT_combined_peaks_DESeq_results.txt", row.names =
 ```
 
 ```{r}
+results_table <- read.table("G4_CnT_combined_peaks_DESeq_results.txt", header = T, sep = "\t")
+results_table$sig <- factor(results_table$sig, levels=c("nonsig","lowlfc","FANCJ","DHX36","DKO"))
+
 DHX36_bed <- results_table[(results_table$DHX36 & results_table$DHX36lfc>1),c(1,2,3,4,9,12)]
 write.table(DHX36_bed,"../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", row.names = F, col.names = F,quote = F, sep = "\t")
 
@@ -420,24 +423,26 @@ ggviolin(sdf[sdf$DKO_top,], x="cond",y="value",fill="cond",palette = mypal[c(4,1
 ```{r}
 library(bedscout)
 
+peak_universe <- "../peaks/G4_combined_min3rep.bed"
+
 bed_peaks <- rtracklayer::import(peak_universe)
 chromhmm_gr <- rtracklayer::import(chromhmm)
 
 
-bed_peaks_annotated <- impute_feature(bed_peaks, chromhmm_gr, "name")
-bed_peaks_annotated_df <- as.data.frame(unique(bed_peaks_annotated))
+bed_peaks_annotated <- unique(impute_feature(bed_peaks, chromhmm_gr, "name"))
+bed_peaks_annotated_df <- as.data.frame(bed_peaks_annotated)
 # If you want to export to BED file with rtracklayer then you
 # do need to explicitly overwrite the name:
 bed_peaks_annotated$name <- bed_peaks_annotated$feature
 rtracklayer::export(unique(bed_peaks_annotated), "../peaks/G4_CnT_combined_peaks_DESeq_annotated_v2.bed")
 
 chromhmm17_gr <- rtracklayer::import("../genome/ChromHMM17.chr9.mm39lift.bed")
-bed_peaks_hmm17 <- impute_feature(bed_peaks, chromhmm17_gr, "name")
+bed_peaks_hmm17 <- unique(impute_feature(bed_peaks, chromhmm17_gr, "name"))
 # If you want to export to BED file with rtracklayer then you
 # do need to explicitly overwrite the name:
 bed_peaks_hmm17$name <- bed_peaks_hmm17$feature
 bed_peaks_hmm17$score[is.na(bed_peaks_hmm17$score)] <- 0
-rtracklayer::export(unique(bed_peaks_hmm17), "../peaks/G4_CnT_combined_peaks_DESeq_annotated_ChromHMM17.bed")
+rtracklayer::export(bed_peaks_hmm17, "../peaks/G4_CnT_combined_peaks_DESeq_annotated_ChromHMM17.bed")
 
 rmsk_gr <- rtracklayer::import("../genome/rmsk.lt200bp.mm39.bed")
 bed_peaks_rmsk <- impute_feature(bed_peaks, rmsk_gr, "name")
@@ -447,7 +452,7 @@ bed_peaks_rmsk$name <- bed_peaks_rmsk$feature
 bed_peaks_rmsk$score[is.na(bed_peaks_rmsk$score)] <- 0
 rtracklayer::export(bed_peaks_rmsk, "../peaks/G4_CnT_combined_peaks_DESeq_annotated_rmsk.bed")
 
-bed_peaks_table <- cbind(bed_peaks_annotated_df,data.frame(baseMean=lfc_DKO$baseMean,DHX36=(data_DHX36$isDE & data_DHX36$lfc>1),FANCJ=(data_FANCJ$isDE & data_FANCJ$lfc>1),DKO=(data_DKO$isDE&data_DKO$lfc>1),DHX36lfc=data_DHX36$lfc,FANCJlfc=data_FANCJ$lfc,DKOlfc=data_DKO$lfc))
+bed_peaks_table <- cbind(bed_peaks_annotated_df,data.frame(baseMean=lfc_DKO$baseMean,nonsig=(!data_DHX36$isDE & !data_FANCJ$isDE & !data_DKO$isDE), DHX36=(data_DHX36$isDE & data_DHX36$lfc>1),FANCJ=(data_FANCJ$isDE & data_FANCJ$lfc>1),DKO=(data_DKO$isDE&data_DKO$lfc>1),DHX36lfc=data_DHX36$lfc,FANCJlfc=data_FANCJ$lfc,DKOlfc=data_DKO$lfc))
 
 write.table(bed_peaks_table,"G4_CnT_combined_peaks_DESeq_annotated_v2.txt", row.names = F, col.names = T,quote = F, sep = "\t")
 ```
@@ -463,7 +468,7 @@ ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
 
 ### DJ Peak Annotation
 ```{r fig.height=2, fig.width=2}
-bed_DJ <- bed_peaks_table[bed_peaks_table$DKO,c(1,2,3,6,15,5)]
+bed_DJ <- bed_peaks_table[bed_peaks_table$DKO,c(1,2,3,6,16,5)]
 bed_DJ$name <- "DJ"
 write.table(bed_DJ,"../peaks/G4_CnT_combined_peaks_DJ.bed", row.names = F, col.names = F,quote = F, sep = "\t")
 
@@ -474,15 +479,16 @@ plot_donut_DJ
 
 ### non-DJ Peak Annotation
 ```{r fig.height=2, fig.width=2}
-bed_nonDJ <- bed_peaks_table[!bed_peaks_table$DKO & !bed_peaks_table$DHX36 & !bed_peaks_table$FANCJ,c(1,2,3,6,15,5)]
+bed_nonDJ <- bed_peaks_table[bed_peaks_table$nonsig,c(1,2,3,6,16,5)]
 bed_nonDJ$name <- "nonDJ"
 write.table(bed_nonDJ,"../peaks/G4_CnT_combined_peaks_nonDJ.bed", row.names = F, col.names = F,quote = F, sep = "\t")
 
 bed_DJ$DKOlfc <- 1
 bed_nonDJ$DKOlfc <- 0
+
 write.table(rbind(bed_DJ,bed_nonDJ),"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed", row.names = F, col.names = F,quote = F, sep = "\t")
 
-stats <- as.data.frame(table(bed_peaks_table$feature[!bed_peaks_table$DKO & !bed_peaks_table$DHX36 & !bed_peaks_table$FANCJ]))
+stats <- as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$nonsig]))
 plot_donut_nonDJ <- ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
 plot_donut_nonDJ
 ```
@@ -490,7 +496,7 @@ plot_donut_nonDJ
 ```{r fig.height=3, fig.width=4}
 vpal=colorRampPalette(c("lightgreen","cornflowerblue","orange","red2"))
 
-stats <- data.frame(as.data.frame(table(bed_peaks_table$feature))[1],as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$DKO]))[2],as.data.frame(table(bed_peaks_table$feature[!bed_peaks_table$DKO & !bed_peaks_table$DHX36 & !bed_peaks_table$FANCJ]))[2])
+stats <- data.frame(as.data.frame(table(bed_peaks_table$feature))[1],as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$DKO]))[2],as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$nonsig]))[2])
 
 colnames(stats) <- c("State","DJ","nonDJ")
 
@@ -505,9 +511,26 @@ plot_bar_chromhmm_anno
 ```
 
 ```{r fig.height=3, fig.width=4}
+vpal=colorRampPalette(c("lightgreen","cornflowerblue","orange","red2"))
+
+stats <- data.frame(as.data.frame(table(bed_peaks_table$feature))[1],as.data.frame(table(bed_peaks_table$feature))[2],as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$DKO]))[2],as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$nonsig]))[2])
+
+colnames(stats) <- c("State","all","DJ","nonDJ")
+
+#stats$DHX36=stats$DJ/sum(stats$DJ)*100
+#stats$FANCJ=stats$nonDJ/sum(stats$nonDJ)*100
+
+mdf <- melt(stats)
+mdf$State <- factor(mdf$State,levels=levels(mdf$State)[c(1,3,5,7,4,6,10,8,9,2)])
+cols=c(vpal(11)[c(4,5,3,2,9,8,7)],"#DDDDDD","#EEEEEE",vpal(11)[10])
+plot_bar_chromhmm_anno_all <- ggbarplot(mdf,x = "variable",y="value",fill="State",palette =cols,  orientation = c("horizontal")) 
+plot_bar_chromhmm_anno_all
+```
+
+```{r fig.height=3, fig.width=4}
 stats$DJ=stats$DJ/sum(stats$DJ)*100
 stats$nonDJ=stats$nonDJ/sum(stats$nonDJ)*100
-
+stats$all=stats$all/sum(stats$all)*100
 mdf <- melt(stats)
 mdf$State <- factor(mdf$State,levels=levels(mdf$State)[c(1,3,5,7,4,6,10,8,9,2)])
 cols=c(vpal(11)[c(4,5,3,2,9,8,7)],"#DDDDDD","#EEEEEE",vpal(11)[10])
