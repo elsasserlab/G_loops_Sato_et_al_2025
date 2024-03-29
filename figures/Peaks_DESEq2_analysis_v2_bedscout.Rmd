@@ -463,6 +463,10 @@ ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
 
 ### DJ Peak Annotation
 ```{r fig.height=2, fig.width=2}
+bed_DJ <- bed_peaks_table[bed_peaks_table$DKO,c(1,2,3,6,15,5)]
+bed_DJ$name <- "DJ"
+write.table(bed_DJ,"../peaks/G4_CnT_combined_peaks_DJ.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+
 stats <- as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$DKO]))
 plot_donut_DJ <- ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
 plot_donut_DJ
@@ -470,6 +474,14 @@ plot_donut_DJ
 
 ### non-DJ Peak Annotation
 ```{r fig.height=2, fig.width=2}
+bed_nonDJ <- bed_peaks_table[!bed_peaks_table$DKO & !bed_peaks_table$DHX36 & !bed_peaks_table$FANCJ,c(1,2,3,6,15,5)]
+bed_nonDJ$name <- "nonDJ"
+write.table(bed_nonDJ,"../peaks/G4_CnT_combined_peaks_nonDJ.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+
+bed_DJ$DKOlfc <- 1
+bed_nonDJ$DKOlfc <- 0
+write.table(rbind(bed_DJ,bed_nonDJ),"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed", row.names = F, col.names = F,quote = F, sep = "\t")
+
 stats <- as.data.frame(table(bed_peaks_table$feature[!bed_peaks_table$DKO & !bed_peaks_table$DHX36 & !bed_peaks_table$FANCJ]))
 plot_donut_nonDJ <- ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
 plot_donut_nonDJ

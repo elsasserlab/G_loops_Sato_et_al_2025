@@ -4,7 +4,8 @@ output: html_notebook
 ---
 
 ```{r}
-coord <- read.table("genes_mm39.txt",header = T,sep = "\t")
+coord <- read.table("ensemble_genes_mm39.txt",header = T,sep = "\t")
+coord<-coord[!is.na(coord$Ensembl.Canonical),]
 
 gl.DKOspec <- read.table("1.list_genes_names_lncRNA_RNAseq_DKOspec.txt")[,1]
 gl.common <- read.table("2.list_genes_names_lncRNA_RNAseq_NonChangedDKOvsWT.txt")[,1]
@@ -13,6 +14,8 @@ gl.WTspec <- read.table("4.list_genes_names_lncRNA_RNAseq_WTspec.txt")[,1]
 ```
 
 ```{r}
+
+
 match<-coord[coord$Gene.name %in% gl.DKOspec,]
 
 bed.DKOspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
@@ -21,8 +24,16 @@ bed.DKOspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name),
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub("1","+",gsub("-1","-",match$Strand)))
+
+tss.DKOspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub("1","+",gsub("-1","-",match$Strand)))
                         
 write.table(bed.DKOspec, file="lncRNA_DKOspec.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+write.table(tss.DKOspec, file="lncRNA_DKOspec.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
 ```
 
 ```{r}
@@ -34,16 +45,21 @@ bed.common <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name),
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub("1","+",gsub("-1","-",match$Strand)))
-                        
+  
+tss.common <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub("1","+",gsub("-1","-",match$Strand)))
+
 write.table(bed.common, file="lncRNA_common.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+write.table(tss.common, file="lncRNA_common.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
 ```
 
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
-
 ```{r}
-
-match<-coord[coord$Gene.name %in% gl.DKOup,]
+match<-coord[coord$Gene.name %in% c(gl.DKOup,gl.DKOspec),]
 
 bed.DKOup <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
                            start=match$Transcript.start..bp., 
@@ -51,24 +67,18 @@ bed.DKOup <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name),
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub("1","+",gsub("-1","-",match$Strand)))
-                        
-write.table(bed.DKOup, file="lncRNA_DKOup.bed",col.names = F,row.names = F, quote = F, sep = "\t")
-```
 
-
-```{r}
-
-match<-coord[coord$Gene.name %in% gl.DKOup,]
-
-bed.DKOup <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
-                           start=match$Transcript.start..bp., 
-                           end=match$Transcript.end..bp., 
+tss.DKOup <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub("1","+",gsub("-1","-",match$Strand)))
-                        
+                       
 write.table(bed.DKOup, file="lncRNA_DKOup.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+write.table(tss.DKOup, file="lncRNA_DKOup.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
 ```
+
 
 ```{r}
 
@@ -80,6 +90,23 @@ bed.WTspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name),
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub("1","+",gsub("-1","-",match$Strand)))
-                        
+
+tss.WTspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub("1","+",gsub("-1","-",match$Strand)))
+
+                      
 write.table(bed.WTspec, file="lncRNA_WTspec.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+write.table(tss.WTspec, file="lncRNA_WTspec.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+```
+
+```{r}
+tss.DKOup$name <- "lncRNA_DKOup"
+tss.common$name <- "lncRNA_ns"
+tss.WTspec$name <- "lncRNA_WTup"
+tss.all <- rbind(tss.DKOup,tss.common,tss.WTspec)
+write.table(tss.all, file="lncRNA_categories.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
 ```

@@ -4,7 +4,8 @@ output: html_notebook
 ---
 
 ```{r}
-coord <- read.table("genes_mm39.txt",header = T,sep = "\t")
+coord <- read.table("ensemble_genes_mm39.txt",header = T,sep = "\t")
+coord<-coord[!is.na(coord$Ensembl.Canonical),]
 
 gl.WTup <- read.csv("table_Downreg_&_WT_specific_genes.csv")[,2]
 gl.ns <- read.csv("table_NoSigChanged_genes.csv")[,2]
@@ -14,14 +15,22 @@ gl.DKOup <- read.csv("table_Upreg_&_DKO_specific_genes.csv")[,2]
 ```{r}
 match<-coord[coord$Gene.stable.ID %in% gl.DKOup,]
 
-bed.DKOspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+bed.DKOup <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
                            start=match$Transcript.start..bp., 
                            end=match$Transcript.end..bp., 
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub("1","+",gsub("-1","-",match$Strand)))
-                        
-write.table(bed.DKOspec, file="mRNA_DKOup.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+
+tss.DKOup <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub("1","+",gsub("-1","-",match$Strand)))
+                          
+write.table(bed.DKOup, file="mRNA_DKOup.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+write.table(tss.DKOup, file="mRNA_DKOup.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
 ```
 
 ```{r}
@@ -33,8 +42,16 @@ bed.ns <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name),
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub("1","+",gsub("-1","-",match$Strand)))
-                        
+
+tss.ns <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub("1","+",gsub("-1","-",match$Strand)))
+
 write.table(bed.ns, file="mRNA_ns.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+write.table(tss.ns, file="mRNA_ns.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
 ```
 
 ```{r}
@@ -47,6 +64,22 @@ bed.WTspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name),
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub("1","+",gsub("-1","-",match$Strand)))
-                        
+
+tss.WTspec <- data.frame( chr=paste0("chr",match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub("1","+",gsub("-1","-",match$Strand)))
+
 write.table(bed.WTspec, file="mRNA_WTup.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+write.table(tss.WTspec, file="mRNA_WTup.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
+```
+
+```{r}
+tss.DKOup$name <- "mRNA_DKOup"
+tss.ns$name <- "mRNA_ns"
+tss.WTspec$name <- "mRNA_WTup"
+tss.all <- rbind(tss.DKOup,tss.ns,tss.WTspec)
+write.table(tss.all, file="mRNA_categories.tss.bed",col.names = F,row.names = F, quote = F, sep = "\t")
 ```

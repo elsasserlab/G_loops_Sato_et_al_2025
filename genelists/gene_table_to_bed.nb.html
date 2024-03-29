@@ -1754,8 +1754,9 @@ display: none;
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29vcmQgPC0gcmVhZC50YWJsZShcImdlbmVzX21tMzkudHh0XCIsaGVhZGVyID0gVCxzZXAgPSBcIlxcdFwiKVxuXG5nbC5XVHVwIDwtIHJlYWQuY3N2KFwidGFibGVfRG93bnJlZ18mX1dUX3NwZWNpZmljX2dlbmVzLmNzdlwiKVssMl1cbmdsLm5zIDwtIHJlYWQuY3N2KFwidGFibGVfTm9TaWdDaGFuZ2VkX2dlbmVzLmNzdlwiKVssMl1cbmdsLkRLT3VwIDwtIHJlYWQuY3N2KFwidGFibGVfVXByZWdfJl9ES09fc3BlY2lmaWNfZ2VuZXMuY3N2XCIpWywyXVxuYGBgIn0= -->
-<pre class="r"><code>coord &lt;- read.table(&quot;genes_mm39.txt&quot;,header = T,sep = &quot;\t&quot;)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29vcmQgPC0gcmVhZC50YWJsZShcImVuc2VtYmxlX2dlbmVzX21tMzkudHh0XCIsaGVhZGVyID0gVCxzZXAgPSBcIlxcdFwiKVxuY29vcmQ8LWNvb3JkWyFpcy5uYShjb29yZCRFbnNlbWJsLkNhbm9uaWNhbCksXVxuXG5nbC5XVHVwIDwtIHJlYWQuY3N2KFwidGFibGVfRG93bnJlZ18mX1dUX3NwZWNpZmljX2dlbmVzLmNzdlwiKVssMl1cbmdsLm5zIDwtIHJlYWQuY3N2KFwidGFibGVfTm9TaWdDaGFuZ2VkX2dlbmVzLmNzdlwiKVssMl1cbmdsLkRLT3VwIDwtIHJlYWQuY3N2KFwidGFibGVfVXByZWdfJl9ES09fc3BlY2lmaWNfZ2VuZXMuY3N2XCIpWywyXVxuYGBgIn0= -->
+<pre class="r"><code>coord &lt;- read.table(&quot;ensemble_genes_mm39.txt&quot;,header = T,sep = &quot;\t&quot;)
+coord&lt;-coord[!is.na(coord$Ensembl.Canonical),]
 
 gl.WTup &lt;- read.csv(&quot;table_Downreg_&amp;_WT_specific_genes.csv&quot;)[,2]
 gl.ns &lt;- read.csv(&quot;table_NoSigChanged_genes.csv&quot;)[,2]
@@ -1765,23 +1766,31 @@ gl.DKOup &lt;- read.csv(&quot;table_Upreg_&amp;_DKO_specific_genes.csv&quot;)[,2
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWF0Y2g8LWNvb3JkW2Nvb3JkJEdlbmUuc3RhYmxlLklEICVpbiUgZ2wuREtPdXAsXVxuXG5iZWQuREtPc3BlYyA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKFwiY2hyXCIsbWF0Y2gkQ2hyb21vc29tZS5zY2FmZm9sZC5uYW1lKSwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0LnN0YXJ0Li5icC4sIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kPW1hdGNoJFRyYW5zY3JpcHQuZW5kLi5icC4sIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgbmFtZT1tYXRjaCRHZW5lLm5hbWUsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YihcIjFcIixcIitcIixnc3ViKFwiLTFcIixcIi1cIixtYXRjaCRTdHJhbmQpKSlcbiAgICAgICAgICAgICAgICAgICAgICAgIFxud3JpdGUudGFibGUoYmVkLkRLT3NwZWMsIGZpbGU9XCJtUk5BX0RLT3VwLmJlZFwiLGNvbC5uYW1lcyA9IEYscm93Lm5hbWVzID0gRiwgcXVvdGUgPSBGLCBzZXAgPSBcIlxcdFwiKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWF0Y2g8LWNvb3JkW2Nvb3JkJEdlbmUuc3RhYmxlLklEICVpbiUgZ2wuREtPdXAsXVxuXG5iZWQuREtPdXAgPC0gZGF0YS5mcmFtZSggY2hyPXBhc3RlMChcImNoclwiLG1hdGNoJENocm9tb3NvbWUuc2NhZmZvbGQubmFtZSksIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQ9bWF0Y2gkVHJhbnNjcmlwdC5zdGFydC4uYnAuLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIGVuZD1tYXRjaCRUcmFuc2NyaXB0LmVuZC4uYnAuLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIG5hbWU9bWF0Y2gkR2VuZS5uYW1lLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3JlPTAsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RyYW5kPWdzdWIoXCIxXCIsXCIrXCIsZ3N1YihcIi0xXCIsXCItXCIsbWF0Y2gkU3RyYW5kKSkpXG5cbnRzcy5ES091cCA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKFwiY2hyXCIsbWF0Y2gkQ2hyb21vc29tZS5zY2FmZm9sZC5uYW1lKSwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0aW9uLnN0YXJ0LnNpdGUuLlRTUy4tMTAwMCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBlbmQ9bWF0Y2gkVHJhbnNjcmlwdGlvbi5zdGFydC5zaXRlLi5UU1MuKzEwMDAsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgbmFtZT1tYXRjaCRHZW5lLm5hbWUsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YihcIjFcIixcIitcIixnc3ViKFwiLTFcIixcIi1cIixtYXRjaCRTdHJhbmQpKSlcbiAgICAgICAgICAgICAgICAgICAgICAgICAgXG53cml0ZS50YWJsZShiZWQuREtPdXAsIGZpbGU9XCJtUk5BX0RLT3VwLmJlZFwiLGNvbC5uYW1lcyA9IEYscm93Lm5hbWVzID0gRiwgcXVvdGUgPSBGLCBzZXAgPSBcIlxcdFwiKVxud3JpdGUudGFibGUodHNzLkRLT3VwLCBmaWxlPVwibVJOQV9ES091cC50c3MuYmVkXCIsY29sLm5hbWVzID0gRixyb3cubmFtZXMgPSBGLCBxdW90ZSA9IEYsIHNlcCA9IFwiXFx0XCIpXG5gYGAifQ== -->
 <pre class="r"><code>match&lt;-coord[coord$Gene.stable.ID %in% gl.DKOup,]
 
-bed.DKOspec &lt;- data.frame( chr=paste0(&quot;chr&quot;,match$Chromosome.scaffold.name), 
+bed.DKOup &lt;- data.frame( chr=paste0(&quot;chr&quot;,match$Chromosome.scaffold.name), 
                            start=match$Transcript.start..bp., 
                            end=match$Transcript.end..bp., 
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub(&quot;1&quot;,&quot;+&quot;,gsub(&quot;-1&quot;,&quot;-&quot;,match$Strand)))
-                        
-write.table(bed.DKOspec, file=&quot;mRNA_DKOup.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)</code></pre>
+
+tss.DKOup &lt;- data.frame( chr=paste0(&quot;chr&quot;,match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub(&quot;1&quot;,&quot;+&quot;,gsub(&quot;-1&quot;,&quot;-&quot;,match$Strand)))
+                          
+write.table(bed.DKOup, file=&quot;mRNA_DKOup.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)
+write.table(tss.DKOup, file=&quot;mRNA_DKOup.tss.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWF0Y2g8LWNvb3JkW2Nvb3JkJEdlbmUuc3RhYmxlLklEICVpbiUgZ2wubnMsXVxuXG5iZWQubnMgPC0gZGF0YS5mcmFtZSggY2hyPXBhc3RlMChcImNoclwiLG1hdGNoJENocm9tb3NvbWUuc2NhZmZvbGQubmFtZSksIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQ9bWF0Y2gkVHJhbnNjcmlwdC5zdGFydC4uYnAuLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIGVuZD1tYXRjaCRUcmFuc2NyaXB0LmVuZC4uYnAuLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIG5hbWU9bWF0Y2gkR2VuZS5uYW1lLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3JlPTAsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RyYW5kPWdzdWIoXCIxXCIsXCIrXCIsZ3N1YihcIi0xXCIsXCItXCIsbWF0Y2gkU3RyYW5kKSkpXG4gICAgICAgICAgICAgICAgICAgICAgICBcbndyaXRlLnRhYmxlKGJlZC5ucywgZmlsZT1cIm1STkFfbnMuYmVkXCIsY29sLm5hbWVzID0gRixyb3cubmFtZXMgPSBGLCBxdW90ZSA9IEYsIHNlcCA9IFwiXFx0XCIpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWF0Y2g8LWNvb3JkW2Nvb3JkJEdlbmUuc3RhYmxlLklEICVpbiUgZ2wubnMsXVxuXG5iZWQubnMgPC0gZGF0YS5mcmFtZSggY2hyPXBhc3RlMChcImNoclwiLG1hdGNoJENocm9tb3NvbWUuc2NhZmZvbGQubmFtZSksIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQ9bWF0Y2gkVHJhbnNjcmlwdC5zdGFydC4uYnAuLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIGVuZD1tYXRjaCRUcmFuc2NyaXB0LmVuZC4uYnAuLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIG5hbWU9bWF0Y2gkR2VuZS5uYW1lLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3JlPTAsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RyYW5kPWdzdWIoXCIxXCIsXCIrXCIsZ3N1YihcIi0xXCIsXCItXCIsbWF0Y2gkU3RyYW5kKSkpXG5cbnRzcy5ucyA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKFwiY2hyXCIsbWF0Y2gkQ2hyb21vc29tZS5zY2FmZm9sZC5uYW1lKSwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0aW9uLnN0YXJ0LnNpdGUuLlRTUy4tMTAwMCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBlbmQ9bWF0Y2gkVHJhbnNjcmlwdGlvbi5zdGFydC5zaXRlLi5UU1MuKzEwMDAsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgbmFtZT1tYXRjaCRHZW5lLm5hbWUsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YihcIjFcIixcIitcIixnc3ViKFwiLTFcIixcIi1cIixtYXRjaCRTdHJhbmQpKSlcblxud3JpdGUudGFibGUoYmVkLm5zLCBmaWxlPVwibVJOQV9ucy5iZWRcIixjb2wubmFtZXMgPSBGLHJvdy5uYW1lcyA9IEYsIHF1b3RlID0gRiwgc2VwID0gXCJcXHRcIilcbndyaXRlLnRhYmxlKHRzcy5ucywgZmlsZT1cIm1STkFfbnMudHNzLmJlZFwiLGNvbC5uYW1lcyA9IEYscm93Lm5hbWVzID0gRiwgcXVvdGUgPSBGLCBzZXAgPSBcIlxcdFwiKVxuYGBgIn0= -->
 <pre class="r"><code>match&lt;-coord[coord$Gene.stable.ID %in% gl.ns,]
 
 bed.ns &lt;- data.frame( chr=paste0(&quot;chr&quot;,match$Chromosome.scaffold.name), 
@@ -1790,14 +1799,22 @@ bed.ns &lt;- data.frame( chr=paste0(&quot;chr&quot;,match$Chromosome.scaffold.na
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub(&quot;1&quot;,&quot;+&quot;,gsub(&quot;-1&quot;,&quot;-&quot;,match$Strand)))
-                        
-write.table(bed.ns, file=&quot;mRNA_ns.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)</code></pre>
+
+tss.ns &lt;- data.frame( chr=paste0(&quot;chr&quot;,match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub(&quot;1&quot;,&quot;+&quot;,gsub(&quot;-1&quot;,&quot;-&quot;,match$Strand)))
+
+write.table(bed.ns, file=&quot;mRNA_ns.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)
+write.table(tss.ns, file=&quot;mRNA_ns.tss.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5tYXRjaDwtY29vcmRbY29vcmQkR2VuZS5zdGFibGUuSUQgJWluJSBnbC5XVHVwLF1cblxuYmVkLldUc3BlYyA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKFwiY2hyXCIsbWF0Y2gkQ2hyb21vc29tZS5zY2FmZm9sZC5uYW1lKSwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0LnN0YXJ0Li5icC4sIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kPW1hdGNoJFRyYW5zY3JpcHQuZW5kLi5icC4sIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgbmFtZT1tYXRjaCRHZW5lLm5hbWUsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YihcIjFcIixcIitcIixnc3ViKFwiLTFcIixcIi1cIixtYXRjaCRTdHJhbmQpKSlcbiAgICAgICAgICAgICAgICAgICAgICAgIFxud3JpdGUudGFibGUoYmVkLldUc3BlYywgZmlsZT1cIm1STkFfV1R1cC5iZWRcIixjb2wubmFtZXMgPSBGLHJvdy5uYW1lcyA9IEYsIHF1b3RlID0gRiwgc2VwID0gXCJcXHRcIilcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG5tYXRjaDwtY29vcmRbY29vcmQkR2VuZS5zdGFibGUuSUQgJWluJSBnbC5XVHVwLF1cblxuYmVkLldUc3BlYyA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKFwiY2hyXCIsbWF0Y2gkQ2hyb21vc29tZS5zY2FmZm9sZC5uYW1lKSwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0LnN0YXJ0Li5icC4sIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kPW1hdGNoJFRyYW5zY3JpcHQuZW5kLi5icC4sIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgbmFtZT1tYXRjaCRHZW5lLm5hbWUsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YihcIjFcIixcIitcIixnc3ViKFwiLTFcIixcIi1cIixtYXRjaCRTdHJhbmQpKSlcblxudHNzLldUc3BlYyA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKFwiY2hyXCIsbWF0Y2gkQ2hyb21vc29tZS5zY2FmZm9sZC5uYW1lKSwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0aW9uLnN0YXJ0LnNpdGUuLlRTUy4tMTAwMCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBlbmQ9bWF0Y2gkVHJhbnNjcmlwdGlvbi5zdGFydC5zaXRlLi5UU1MuKzEwMDAsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgbmFtZT1tYXRjaCRHZW5lLm5hbWUsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YihcIjFcIixcIitcIixnc3ViKFwiLTFcIixcIi1cIixtYXRjaCRTdHJhbmQpKSlcblxud3JpdGUudGFibGUoYmVkLldUc3BlYywgZmlsZT1cIm1STkFfV1R1cC5iZWRcIixjb2wubmFtZXMgPSBGLHJvdy5uYW1lcyA9IEYsIHF1b3RlID0gRiwgc2VwID0gXCJcXHRcIilcbndyaXRlLnRhYmxlKHRzcy5XVHNwZWMsIGZpbGU9XCJtUk5BX1dUdXAudHNzLmJlZFwiLGNvbC5uYW1lcyA9IEYscm93Lm5hbWVzID0gRiwgcXVvdGUgPSBGLCBzZXAgPSBcIlxcdFwiKVxuYGBgIn0= -->
 <pre class="r"><code>
 match&lt;-coord[coord$Gene.stable.ID %in% gl.WTup,]
 
@@ -1807,12 +1824,31 @@ bed.WTspec &lt;- data.frame( chr=paste0(&quot;chr&quot;,match$Chromosome.scaffol
                            name=match$Gene.name, 
                            score=0, 
                            strand=gsub(&quot;1&quot;,&quot;+&quot;,gsub(&quot;-1&quot;,&quot;-&quot;,match$Strand)))
-                        
-write.table(bed.WTspec, file=&quot;mRNA_WTup.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)</code></pre>
+
+tss.WTspec &lt;- data.frame( chr=paste0(&quot;chr&quot;,match$Chromosome.scaffold.name), 
+                           start=match$Transcription.start.site..TSS.-1000, 
+                           end=match$Transcription.start.site..TSS.+1000, 
+                           name=match$Gene.name, 
+                           score=0, 
+                           strand=gsub(&quot;1&quot;,&quot;+&quot;,gsub(&quot;-1&quot;,&quot;-&quot;,match$Strand)))
+
+write.table(bed.WTspec, file=&quot;mRNA_WTup.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)
+write.table(tss.WTspec, file=&quot;mRNA_WTup.tss.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudHNzLkRLT3VwJG5hbWUgPC0gXCJtUk5BX0RLT3VwXCJcbnRzcy5ucyRuYW1lIDwtIFwibVJOQV9uc1wiXG50c3MuV1RzcGVjJG5hbWUgPC0gXCJtUk5BX1dUdXBcIlxudHNzLmFsbCA8LSByYmluZCh0c3MuREtPdXAsdHNzLm5zLHRzcy5XVHNwZWMpXG53cml0ZS50YWJsZSh0c3MuYWxsLCBmaWxlPVwibVJOQV9jYXRlZ29yaWVzLnRzcy5iZWRcIixjb2wubmFtZXMgPSBGLHJvdy5uYW1lcyA9IEYsIHF1b3RlID0gRiwgc2VwID0gXCJcXHRcIilcbmBgYCJ9 -->
+<pre class="r"><code>tss.DKOup$name &lt;- &quot;mRNA_DKOup&quot;
+tss.ns$name &lt;- &quot;mRNA_ns&quot;
+tss.WTspec$name &lt;- &quot;mRNA_WTup&quot;
+tss.all &lt;- rbind(tss.DKOup,tss.ns,tss.WTspec)
+write.table(tss.all, file=&quot;mRNA_categories.tss.bed&quot;,col.names = F,row.names = F, quote = F, sep = &quot;\t&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiR2VuZSBMaXN0IHRvIEJFRCIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmNvb3JkIDwtIHJlYWQudGFibGUoImdlbmVzX21tMzkudHh0IixoZWFkZXIgPSBULHNlcCA9ICJcdCIpCgpnbC5XVHVwIDwtIHJlYWQuY3N2KCJ0YWJsZV9Eb3ducmVnXyZfV1Rfc3BlY2lmaWNfZ2VuZXMuY3N2IilbLDJdCmdsLm5zIDwtIHJlYWQuY3N2KCJ0YWJsZV9Ob1NpZ0NoYW5nZWRfZ2VuZXMuY3N2IilbLDJdCmdsLkRLT3VwIDwtIHJlYWQuY3N2KCJ0YWJsZV9VcHJlZ18mX0RLT19zcGVjaWZpY19nZW5lcy5jc3YiKVssMl0KYGBgCgpgYGB7cn0KbWF0Y2g8LWNvb3JkW2Nvb3JkJEdlbmUuc3RhYmxlLklEICVpbiUgZ2wuREtPdXAsXQoKYmVkLkRLT3NwZWMgPC0gZGF0YS5mcmFtZSggY2hyPXBhc3RlMCgiY2hyIixtYXRjaCRDaHJvbW9zb21lLnNjYWZmb2xkLm5hbWUpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQ9bWF0Y2gkVHJhbnNjcmlwdC5zdGFydC4uYnAuLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kPW1hdGNoJFRyYW5zY3JpcHQuZW5kLi5icC4sIAogICAgICAgICAgICAgICAgICAgICAgICAgICBuYW1lPW1hdGNoJEdlbmUubmFtZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3JlPTAsIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YigiMSIsIisiLGdzdWIoIi0xIiwiLSIsbWF0Y2gkU3RyYW5kKSkpCiAgICAgICAgICAgICAgICAgICAgICAgIAp3cml0ZS50YWJsZShiZWQuREtPc3BlYywgZmlsZT0ibVJOQV9ES091cC5iZWQiLGNvbC5uYW1lcyA9IEYscm93Lm5hbWVzID0gRiwgcXVvdGUgPSBGLCBzZXAgPSAiXHQiKQpgYGAKCmBgYHtyfQptYXRjaDwtY29vcmRbY29vcmQkR2VuZS5zdGFibGUuSUQgJWluJSBnbC5ucyxdCgpiZWQubnMgPC0gZGF0YS5mcmFtZSggY2hyPXBhc3RlMCgiY2hyIixtYXRjaCRDaHJvbW9zb21lLnNjYWZmb2xkLm5hbWUpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQ9bWF0Y2gkVHJhbnNjcmlwdC5zdGFydC4uYnAuLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kPW1hdGNoJFRyYW5zY3JpcHQuZW5kLi5icC4sIAogICAgICAgICAgICAgICAgICAgICAgICAgICBuYW1lPW1hdGNoJEdlbmUubmFtZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3JlPTAsIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YigiMSIsIisiLGdzdWIoIi0xIiwiLSIsbWF0Y2gkU3RyYW5kKSkpCiAgICAgICAgICAgICAgICAgICAgICAgIAp3cml0ZS50YWJsZShiZWQubnMsIGZpbGU9Im1STkFfbnMuYmVkIixjb2wubmFtZXMgPSBGLHJvdy5uYW1lcyA9IEYsIHF1b3RlID0gRiwgc2VwID0gIlx0IikKYGBgCgpgYGB7cn0KCm1hdGNoPC1jb29yZFtjb29yZCRHZW5lLnN0YWJsZS5JRCAlaW4lIGdsLldUdXAsXQoKYmVkLldUc3BlYyA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKCJjaHIiLG1hdGNoJENocm9tb3NvbWUuc2NhZmZvbGQubmFtZSksIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0LnN0YXJ0Li5icC4sIAogICAgICAgICAgICAgICAgICAgICAgICAgICBlbmQ9bWF0Y2gkVHJhbnNjcmlwdC5lbmQuLmJwLiwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIG5hbWU9bWF0Y2gkR2VuZS5uYW1lLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0cmFuZD1nc3ViKCIxIiwiKyIsZ3N1YigiLTEiLCItIixtYXRjaCRTdHJhbmQpKSkKICAgICAgICAgICAgICAgICAgICAgICAgCndyaXRlLnRhYmxlKGJlZC5XVHNwZWMsIGZpbGU9Im1STkFfV1R1cC5iZWQiLGNvbC5uYW1lcyA9IEYscm93Lm5hbWVzID0gRiwgcXVvdGUgPSBGLCBzZXAgPSAiXHQiKQpgYGA=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiR2VuZSBMaXN0IHRvIEJFRCIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmNvb3JkIDwtIHJlYWQudGFibGUoImVuc2VtYmxlX2dlbmVzX21tMzkudHh0IixoZWFkZXIgPSBULHNlcCA9ICJcdCIpCmNvb3JkPC1jb29yZFshaXMubmEoY29vcmQkRW5zZW1ibC5DYW5vbmljYWwpLF0KCmdsLldUdXAgPC0gcmVhZC5jc3YoInRhYmxlX0Rvd25yZWdfJl9XVF9zcGVjaWZpY19nZW5lcy5jc3YiKVssMl0KZ2wubnMgPC0gcmVhZC5jc3YoInRhYmxlX05vU2lnQ2hhbmdlZF9nZW5lcy5jc3YiKVssMl0KZ2wuREtPdXAgPC0gcmVhZC5jc3YoInRhYmxlX1VwcmVnXyZfREtPX3NwZWNpZmljX2dlbmVzLmNzdiIpWywyXQpgYGAKCmBgYHtyfQptYXRjaDwtY29vcmRbY29vcmQkR2VuZS5zdGFibGUuSUQgJWluJSBnbC5ES091cCxdCgpiZWQuREtPdXAgPC0gZGF0YS5mcmFtZSggY2hyPXBhc3RlMCgiY2hyIixtYXRjaCRDaHJvbW9zb21lLnNjYWZmb2xkLm5hbWUpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQ9bWF0Y2gkVHJhbnNjcmlwdC5zdGFydC4uYnAuLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kPW1hdGNoJFRyYW5zY3JpcHQuZW5kLi5icC4sIAogICAgICAgICAgICAgICAgICAgICAgICAgICBuYW1lPW1hdGNoJEdlbmUubmFtZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3JlPTAsIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YigiMSIsIisiLGdzdWIoIi0xIiwiLSIsbWF0Y2gkU3RyYW5kKSkpCgp0c3MuREtPdXAgPC0gZGF0YS5mcmFtZSggY2hyPXBhc3RlMCgiY2hyIixtYXRjaCRDaHJvbW9zb21lLnNjYWZmb2xkLm5hbWUpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQ9bWF0Y2gkVHJhbnNjcmlwdGlvbi5zdGFydC5zaXRlLi5UU1MuLTEwMDAsIAogICAgICAgICAgICAgICAgICAgICAgICAgICBlbmQ9bWF0Y2gkVHJhbnNjcmlwdGlvbi5zdGFydC5zaXRlLi5UU1MuKzEwMDAsIAogICAgICAgICAgICAgICAgICAgICAgICAgICBuYW1lPW1hdGNoJEdlbmUubmFtZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3JlPTAsIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YigiMSIsIisiLGdzdWIoIi0xIiwiLSIsbWF0Y2gkU3RyYW5kKSkpCiAgICAgICAgICAgICAgICAgICAgICAgICAgCndyaXRlLnRhYmxlKGJlZC5ES091cCwgZmlsZT0ibVJOQV9ES091cC5iZWQiLGNvbC5uYW1lcyA9IEYscm93Lm5hbWVzID0gRiwgcXVvdGUgPSBGLCBzZXAgPSAiXHQiKQp3cml0ZS50YWJsZSh0c3MuREtPdXAsIGZpbGU9Im1STkFfREtPdXAudHNzLmJlZCIsY29sLm5hbWVzID0gRixyb3cubmFtZXMgPSBGLCBxdW90ZSA9IEYsIHNlcCA9ICJcdCIpCmBgYAoKYGBge3J9Cm1hdGNoPC1jb29yZFtjb29yZCRHZW5lLnN0YWJsZS5JRCAlaW4lIGdsLm5zLF0KCmJlZC5ucyA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKCJjaHIiLG1hdGNoJENocm9tb3NvbWUuc2NhZmZvbGQubmFtZSksIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0LnN0YXJ0Li5icC4sIAogICAgICAgICAgICAgICAgICAgICAgICAgICBlbmQ9bWF0Y2gkVHJhbnNjcmlwdC5lbmQuLmJwLiwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIG5hbWU9bWF0Y2gkR2VuZS5uYW1lLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0cmFuZD1nc3ViKCIxIiwiKyIsZ3N1YigiLTEiLCItIixtYXRjaCRTdHJhbmQpKSkKCnRzcy5ucyA8LSBkYXRhLmZyYW1lKCBjaHI9cGFzdGUwKCJjaHIiLG1hdGNoJENocm9tb3NvbWUuc2NhZmZvbGQubmFtZSksIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzdGFydD1tYXRjaCRUcmFuc2NyaXB0aW9uLnN0YXJ0LnNpdGUuLlRTUy4tMTAwMCwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIGVuZD1tYXRjaCRUcmFuc2NyaXB0aW9uLnN0YXJ0LnNpdGUuLlRTUy4rMTAwMCwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIG5hbWU9bWF0Y2gkR2VuZS5uYW1lLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NvcmU9MCwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0cmFuZD1nc3ViKCIxIiwiKyIsZ3N1YigiLTEiLCItIixtYXRjaCRTdHJhbmQpKSkKCndyaXRlLnRhYmxlKGJlZC5ucywgZmlsZT0ibVJOQV9ucy5iZWQiLGNvbC5uYW1lcyA9IEYscm93Lm5hbWVzID0gRiwgcXVvdGUgPSBGLCBzZXAgPSAiXHQiKQp3cml0ZS50YWJsZSh0c3MubnMsIGZpbGU9Im1STkFfbnMudHNzLmJlZCIsY29sLm5hbWVzID0gRixyb3cubmFtZXMgPSBGLCBxdW90ZSA9IEYsIHNlcCA9ICJcdCIpCmBgYAoKYGBge3J9CgptYXRjaDwtY29vcmRbY29vcmQkR2VuZS5zdGFibGUuSUQgJWluJSBnbC5XVHVwLF0KCmJlZC5XVHNwZWMgPC0gZGF0YS5mcmFtZSggY2hyPXBhc3RlMCgiY2hyIixtYXRjaCRDaHJvbW9zb21lLnNjYWZmb2xkLm5hbWUpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhcnQ9bWF0Y2gkVHJhbnNjcmlwdC5zdGFydC4uYnAuLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kPW1hdGNoJFRyYW5zY3JpcHQuZW5kLi5icC4sIAogICAgICAgICAgICAgICAgICAgICAgICAgICBuYW1lPW1hdGNoJEdlbmUubmFtZSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHNjb3JlPTAsIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJhbmQ9Z3N1YigiMSIsIisiLGdzdWIoIi0xIiwiLSIsbWF0Y2gkU3RyYW5kKSkpCgp0c3MuV1RzcGVjIDwtIGRhdGEuZnJhbWUoIGNocj1wYXN0ZTAoImNociIsbWF0Y2gkQ2hyb21vc29tZS5zY2FmZm9sZC5uYW1lKSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0YXJ0PW1hdGNoJFRyYW5zY3JpcHRpb24uc3RhcnQuc2l0ZS4uVFNTLi0xMDAwLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgZW5kPW1hdGNoJFRyYW5zY3JpcHRpb24uc3RhcnQuc2l0ZS4uVFNTLisxMDAwLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgbmFtZT1tYXRjaCRHZW5lLm5hbWUsIAogICAgICAgICAgICAgICAgICAgICAgICAgICBzY29yZT0wLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RyYW5kPWdzdWIoIjEiLCIrIixnc3ViKCItMSIsIi0iLG1hdGNoJFN0cmFuZCkpKQoKd3JpdGUudGFibGUoYmVkLldUc3BlYywgZmlsZT0ibVJOQV9XVHVwLmJlZCIsY29sLm5hbWVzID0gRixyb3cubmFtZXMgPSBGLCBxdW90ZSA9IEYsIHNlcCA9ICJcdCIpCndyaXRlLnRhYmxlKHRzcy5XVHNwZWMsIGZpbGU9Im1STkFfV1R1cC50c3MuYmVkIixjb2wubmFtZXMgPSBGLHJvdy5uYW1lcyA9IEYsIHF1b3RlID0gRiwgc2VwID0gIlx0IikKYGBgCgpgYGB7cn0KdHNzLkRLT3VwJG5hbWUgPC0gIm1STkFfREtPdXAiCnRzcy5ucyRuYW1lIDwtICJtUk5BX25zIgp0c3MuV1RzcGVjJG5hbWUgPC0gIm1STkFfV1R1cCIKdHNzLmFsbCA8LSByYmluZCh0c3MuREtPdXAsdHNzLm5zLHRzcy5XVHNwZWMpCndyaXRlLnRhYmxlKHRzcy5hbGwsIGZpbGU9Im1STkFfY2F0ZWdvcmllcy50c3MuYmVkIixjb2wubmFtZXMgPSBGLHJvdy5uYW1lcyA9IEYsIHF1b3RlID0gRiwgc2VwID0gIlx0IikKYGBg</div>
 
 
 
