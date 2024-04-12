@@ -463,7 +463,8 @@ bed_peaks_table <- read.table("G4_CnT_combined_peaks_DESeq_annotated_v2.txt", he
 
 vpal=colorRampPalette(c("cornflowerblue","orange","red2"))
 stats <- as.data.frame(table(bed_peaks_table$feature))
-ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
+plot_donut_all <- ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
+plot_donut_all
 ```
 
 ### DJ Peak Annotation
@@ -492,6 +493,12 @@ stats <- as.data.frame(table(bed_peaks_table$feature[bed_peaks_table$nonsig]))
 plot_donut_nonDJ <- ggdonutchart(stats,x = "Freq",label="Var1",fill=vpal(10))
 plot_donut_nonDJ
 ```
+```{r}
+ggsave("plots/plot_donut_DJ.pdf",plot_donut_DJ)
+ggsave("plots/plot_donut_nonDJ.pdf",plot_donut_nonDJ)
+ggsave("plots/plot_donut_all.pdf",plot_donut_all)
+``` 
+
 
 ```{r fig.height=3, fig.width=4}
 vpal=colorRampPalette(c("lightgreen","cornflowerblue","orange","red2"))
