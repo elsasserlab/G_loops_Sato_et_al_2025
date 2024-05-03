@@ -219,11 +219,23 @@ plot_XY_DKO <- rasterize(last_plot(), layers='Point', dpi=600)
 ```{r fig.width=2, fig.height=2}
 data_DKO$lfc_DHX36 <- data_DHX36$lfc
 data_DKO$lfc_FANCJ <- data_FANCJ$lfc
-ggscatter(data_DKO,x ="lfc_DHX36",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3]))+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5))
-plot_LFC_DKO_vs_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600)
+ggscatter(data_DKO,x ="lfc_DHX36",y="lfc",color="gray",size = 0.8, alpha=0.5, palette = c("gray",mypal[3]), add = "reg.line")+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5)) + stat_cor()
+plot_LFC_DKO_vs_DHX36_reg <- rasterize(last_plot(), layers='Point', dpi=600) 
+```
+
+```{r fig.width=2, fig.height=2}
+data_DKO$lfc_DHX36 <- data_DHX36$lfc
+data_DKO$lfc_FANCJ <- data_FANCJ$lfc
+ggscatter(data_DKO,x ="lfc_DHX36",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3]), add = "reg.line")+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5)) + stat_cor()
+plot_LFC_DKO_vs_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
 ```
 ```{r fig.width=2, fig.height=2}
-ggscatter(data_DKO,x ="lfc_FANCJ",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3]))+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5))
+ggscatter(data_DKO,x ="lfc_FANCJ",y="lfc",color="gray",size = 0.8, alpha=0.5, palette = c("gray",mypal[3]), add="reg.line")+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5)) + stat_cor()
+plot_LFC_DKO_vs_FANCJ_reg <- rasterize(last_plot(), layers='Point', dpi=600)
+```
+
+```{r fig.width=2, fig.height=2}
+ggscatter(data_DKO,x ="lfc_FANCJ",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3]))+ geom_hline(yintercept = 0, linetype="dashed", size=0.1) + geom_vline(xintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5), xlim=c(-5,5)) + stat_cor()
 plot_LFC_DKO_vs_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600)
 ```
 ```{r fig.width=2, fig.height=2}
@@ -290,6 +302,8 @@ ggsave("plots/peaks_DESeq2_MA_FANCJ.pdf",plot_MA_FANCJ,width = 4, height= 4)
 ggsave("plots/peaks_DESeq2_MA_DKO.pdf",plot_MA_DKO,width = 4, height= 4)
 ggsave("plots/peaks_DESeq2_LFC_DHX36.pdf",plot_LFC_DKO_vs_DHX36,width = 4, height= 4)
 ggsave("plots/peaks_DESeq2_LFC_FANCJ.pdf",plot_LFC_DKO_vs_FANCJ,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_LFC_DHX36_reg.pdf",plot_LFC_DKO_vs_DHX36_reg,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_LFC_FANCJ_reg.pdf",plot_LFC_DKO_vs_FANCJ_reg,width = 4, height= 4)
 ggsave("plots/peaks_DESeq2_Venn_KOs.pdf",plot_Venn_all,width = 4, height= 4)
 ggsave("plots/peaks_DESeq2_Venn_DKO_vs_all.pdf",plot_Venn_DKO,width = 4, height= 4)
 ``` 
