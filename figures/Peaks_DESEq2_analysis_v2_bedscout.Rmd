@@ -290,11 +290,23 @@ plot_Venn_all
 ```
 ```{r fig.width=2, fig.height=2}
 library(eulerr)
+DHX36neg <- results_table[(results_table$DHX36==TRUE & results_table$DHX36lfc< -1),c(4)]
+FANCJneg <- results_table[(results_table$FANCJ==TRUE & results_table$FANCJlfc< -1),c(4)]
 DKOneg <- results_table[(results_table$DKO==TRUE & results_table$DKOlfc< -1),c(4)]
-v <- list(all=cov.WT$name,DKOneg=DKOneg,DKO=DKO_bed$name)
-plot_Venn_DKO <- plot(euler(v),quantities=T)
-plot_Venn_DKO
+v <- list(DHX36=DHX36neg,FANCJ=FANCJneg,DKOneg=DKOneg)
+plot_Venn_down <- plot(euler(v),quantities=T)
+plot_Venn_down
 ```
+```{r fig.width=2, fig.height=2}
+library(eulerr)
+DHX36neg <- results_table[(results_table$DHX36==TRUE & results_table$DHX36lfc< -1),c(4)]
+FANCJneg <- results_table[(results_table$FANCJ==TRUE & results_table$FANCJlfc< -1),c(4)]
+DKOneg <- results_table[(results_table$DKO==TRUE & results_table$DKOlfc< -1),c(4)]
+v <- list(DHX36=DHX36neg,FANCJ=FANCJneg,DKOneg=DKOneg)
+plot_Venn_down <- plot(euler(v),quantities=T)
+plot_Venn_down
+```
+
 ```{r}
 dir.create("./plots",showWarnings = F)
 ggsave("plots/peaks_DESeq2_MA_DHX36.pdf",plot_MA_DHX36,width = 4, height= 4)
@@ -306,6 +318,7 @@ ggsave("plots/peaks_DESeq2_LFC_DHX36_reg.pdf",plot_LFC_DKO_vs_DHX36_reg,width = 
 ggsave("plots/peaks_DESeq2_LFC_FANCJ_reg.pdf",plot_LFC_DKO_vs_FANCJ_reg,width = 4, height= 4)
 ggsave("plots/peaks_DESeq2_Venn_KOs.pdf",plot_Venn_all,width = 4, height= 4)
 ggsave("plots/peaks_DESeq2_Venn_DKO_vs_all.pdf",plot_Venn_DKO,width = 4, height= 4)
+ggsave("plots/peaks_DESeq2_Venn_down.pdf",plot_Venn_down,width = 4, height= 4)
 ``` 
 
 ```{r fig.width=6, fig.height=4}
@@ -459,7 +472,7 @@ bed_peaks_hmm17$score[is.na(bed_peaks_hmm17$score)] <- 0
 rtracklayer::export(bed_peaks_hmm17, "../peaks/G4_CnT_combined_peaks_DESeq_annotated_ChromHMM17.bed")
 
 rmsk_gr <- rtracklayer::import("../genome/rmsk.lt200bp.mm39.bed")
-bed_peaks_rmsk <- impute_feature(bed_peaks, rmsk_gr, "name")
+bed_peaks_rmsk <- unique(impute_feature(bed_peaks, rmsk_gr, "name"))
 # If you want to export to BED file with rtracklayer then you
 # do need to explicitly overwrite the name:
 bed_peaks_rmsk$name <- bed_peaks_rmsk$feature
@@ -469,6 +482,14 @@ rtracklayer::export(bed_peaks_rmsk, "../peaks/G4_CnT_combined_peaks_DESeq_annota
 bed_peaks_table <- cbind(bed_peaks_annotated_df,data.frame(baseMean=lfc_DKO$baseMean,nonsig=(!data_DHX36$isDE & !data_FANCJ$isDE & !data_DKO$isDE), DHX36=(data_DHX36$isDE & data_DHX36$lfc>1),FANCJ=(data_FANCJ$isDE & data_FANCJ$lfc>1),DKO=(data_DKO$isDE&data_DKO$lfc>1),DHX36lfc=data_DHX36$lfc,FANCJlfc=data_FANCJ$lfc,DKOlfc=data_DKO$lfc))
 
 write.table(bed_peaks_table,"G4_CnT_combined_peaks_DESeq_annotated_v2.txt", row.names = F, col.names = T,quote = F, sep = "\t")
+```
+
+```{r}
+bed_peaks_table$rmsk <- bed_peaks_rmsk$feature
+rmsk_table <- table(bed_peaks_table$rmsk[bed_peaks_table$DKO])
+write.table(rmsk_table[rmsk_table > 50],"G4_CnT_combined_peaks_DESeq_DJ_rmsk.txt", quote=F, sep = "\t", row.names = F)
+rmsk_table <- table(bed_peaks_table$rmsk[!bed_peaks_table$DKO])
+write.table(rmsk_table[rmsk_table > 50],"G4_CnT_combined_peaks_DESeq_nonDJ_rmsk.txt", quote=F, sep = "\t", row.names = F)
 ```
 
 ```{r fig.height=2, fig.width=2}
