@@ -624,3 +624,11 @@ p <- ggdraw() +
 p
 ggsave("panels/peak_anno_violin_v2.pdf",p)
 ``` 
+
+```{r}
+library("rtracklayer")
+DJ <- import("../peaks/G4_CnT_combined_peaks_DJ.bed")
+peaks_WT <- import("../peaks/G4_CnT_WT_combined.bed")
+peaks_DKO <- import("../peaks/G4_CnT_P3D4_combined.bed")
+bedscout::plot_euler(grlist=list(peaks_WT,peaks_DKO,DJ),names = c("WT","DKO","DJ"))
+```
