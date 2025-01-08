@@ -1,0 +1,107 @@
+---
+title: "Reanalysis BRCA2 ChIP-seq"
+output: html_notebook
+---
+
+Simon Elsässer, Karolinska Institutet (2024)
+
+GSM3633348	ESC_BRCA2
+GSM3633349	ESC_Input
+
+### Profile plots of promoters, enhancders and significant peaks determined by DESeq2.
+
+```{r fig.width=6, fig.height=3}
+bw_dir <- "~/Downloads/BRCA2/"
+
+library("wigglescout")
+library("ggpubr")
+library("ggplot2")
+library("DESeq2")
+library("dplyr")
+library("ggrastr")
+
+clean <- function (fn) {
+  fn <- gsub(pattern = ".+/", "", x = fn)
+  fn <- gsub(pattern = ".mm9.+", "", x = fn)
+  fn <- gsub(pattern = ".mm39.+", "", x = fn)
+  fn <- gsub(pattern = "_S.+", "", x = fn)
+  fn <- gsub(pattern = "_combined.+", "", x = fn)
+  fn <- gsub(pattern = "G4 CnT ", "", x = fn)
+  fn <- gsub(pattern = "G4_CnT_", "", x = fn)
+  fn <- gsub(pattern = "_batch2", "", x = fn)
+  fn <- gsub(pattern = "-", " ", x = fn)
+  fn <- gsub(pattern = "_", " ", x = fn)
+  fn <- gsub(pattern = " HA ", " ", x = fn)
+  fn <- gsub(pattern = "D1D6", "FANCJ-/-", x = fn)
+  fn <- gsub(pattern = "P2D2", "DHX36-/-", x = fn)
+  fn <- gsub(pattern = "P3D4", "FANCJ-/-DHX36-/-", x = fn)
+  return(fn)
+}
+
+brca2.bws <- list.files(bw_dir,pattern="ESC_.+.bw",full.names = T)
+
+mypal <-c("green4","#505050")
+```
+
+```{r}
+brca2.peaks <- rtracklayer::import('../peaks/ESC_BRCA2_peaks.bed')
+peak_universe <- rtracklayer::import("../peaks/G4_combined_min3rep.bed")
+bedscout::plot_euler(list(brca2.peaks,peak_universe),names = c("BRCA2","G4"))
+```
+```{r}
+peak_DJs <- bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed')
+bedscout::plot_euler(append(append(peak_DJs,peak_universe),brca2.peaks),names = c("DJ","nonDJ","G4","BRCA2"),shape = "ellipse")
+```
+```{r}
+brca2.anno <- bedscout::annotate_overlapping_features(brca2.peaks, rtracklayer::import('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed'),name_field = "name",)
+table(rtracklayer::import('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed')$name)
+table(brca2.anno$nearby_features)
+```
+
+```{r}
+peak_DJs <- bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed')
+bedscout::plot_euler(append(peak_DJs,brca2.peaks),names = c("DJ","nonDJ","BRCA2"))
+```
+
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = brca2.bws[1],loci = peak_universe, labels=c("G4s"),mode="center",show_error=T,colors = mypal, verbose=F) + coord_cartesian(ylim=c(0,2))
+```
+
+
+## DJ peaks
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_BRCA2 <- plot_bw_profile(bwfiles = brca2.bws[1],loci = peak_DJs, labels=c("DJ","nonDJ"),mode="center",show_error=T,colors = mypal, verbose=F) + coord_cartesian(ylim=c(0,2))
+plot_profile_BRCA2
+```
+
+
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_bw_profile(bwfiles = brca2.bws[1],loci = bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed'),mode="center",show_error=T,verbose=F,) + coord_cartesian(ylim=c(0,2.5))
+```
+```{r}
+unlist(bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed'))
+```
+
+```{r fig.width=3, fig.height=4}
+plot_bw_heatmap(bwfiles = brca2.bws[1],loci = peak_universe,mode="center",max_rows_allowed = 500, verbose=F)
+plot_bw_heatmap(bwfiles = brca2.bws[2],loci = peak_DJs[[1]],mode="center",max_rows_allowed = 500, verbose=F)
+plot_bw_heatmap(bwfiles = brca2.bws[2],loci = peak_DJs[[2]],mode="center",max_rows_allowed = 500, verbose=F)
+```
+
+
+```{r fig.width=2, fig.height=4}
+df <- as.data.frame(bw_loci(brca2,loci="G4_CnT_combined_peaks_DJ_nonDJ.mm9.bed",labels=c("BRCA2","Input")))
+
+
+mdf <- reshape2::melt(df[,c(6,8)])
+ggviolin(mdf, x="name",y="value",fill="name",palette = mypal, add="mean_sd", title = "BRCA2 ChIP-seq (DJ vs nonDJ") + coord_cartesian(ylim=c(0,10)) + stat_compare_means(label.y = 10, aes(label = paste0("p=", after_stat(p.format)))) 
+```
+```{r fig.width=2, fig.height=4}
+mdf <- reshape2::melt(df[,c(6,8)])
+mdf$lg2 <- log2(mdf$value)
+ggviolin(mdf, x="name",y="value",fill="name",palette = mypal, add="boxplot", title = "BRCA2 ChIP-seq (DJ vs nonDJ")  + coord_cartesian(ylim=c(0,10)) + stat_compare_means(label.y = 10, aes(label = paste0("p=", after_stat(p.format)))) 
+```
+
+
+
+

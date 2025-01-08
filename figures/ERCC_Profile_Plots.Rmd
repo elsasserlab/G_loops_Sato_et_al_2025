@@ -1,0 +1,108 @@
+---
+title: "G4 CUT&Tag analysis mESC (ERCC WT and KO)"
+output: html_notebook
+---
+
+Simon Elsässer, Karolinska Institutet (2023)
+
+### Profile plots of promoters, enhancders and significant peaks determined by DESeq2.
+
+```{r fig.width=6, fig.height=3}
+bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+
+library("wigglescout")
+library("ggpubr")
+library("ggplot2")
+library("DESeq2")
+library("dplyr")
+library("ggrastr")
+
+clean <- function (fn) {
+  fn <- gsub(pattern = ".+/", "", x = fn)
+  fn <- gsub(pattern = ".mm9.+", "", x = fn)
+  fn <- gsub(pattern = ".mm39.+", "", x = fn)
+  fn <- gsub(pattern = "_S.+", "", x = fn)
+  fn <- gsub(pattern = "_combined.+", "", x = fn)
+  fn <- gsub(pattern = "G4 CnT ", "", x = fn)
+  fn <- gsub(pattern = "G4_CnT_", "", x = fn)
+  fn <- gsub(pattern = "_batch2", "", x = fn)
+  fn <- gsub(pattern = "-", " ", x = fn)
+  fn <- gsub(pattern = "_", " ", x = fn)
+  fn <- gsub(pattern = " HA ", " ", x = fn)
+  fn <- gsub(pattern = "D1D6", "FANCJ-/-", x = fn)
+  fn <- gsub(pattern = "P2D2", "DHX36-/-", x = fn)
+  fn <- gsub(pattern = "P3D4", "FANCJ-/-DHX36-/-", x = fn)
+  return(fn)
+}
+
+G4.BWs <- list.files(bw_dir,pattern="G4_CnT_ERCC.+_R..bw",full.names = T)
+R.BWs <- list.files(bw_dir,pattern="Rloop_CnT_ERCC.+_R..bw",full.names = T)
+
+mypal <-c("cornflowerblue","orange","red2","#505050")
+mypal2 <-c("darkorange2","darkorange2","#505050","#505050")
+```
+
+## DJ peaks
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_G4_DJ <- plot_bw_profile(bwfiles = G4.BWs,loci = "../peaks/G4_CnT_combined_peaks_DJ.bed", mode="center", labels = clean(G4.BWs),show_error=T,colors = mypal2, verbose=F) + scale_y_continuous(limits=c(0,13))
+plot_profile_G4_DJ
+```
+
+
+## non-DJ peaks
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_G4_nonDJ <- plot_bw_profile(bwfiles = G4.BWs,loci = "../peaks/G4_CnT_combined_peaks_nonDJ.bed", mode="center", labels = clean(G4.BWs),show_error=T,colors = mypal2, verbose=F) + scale_y_continuous(limits=c(0,13))
+plot_profile_G4_nonDJ
+```
+## top DKO peaks
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_G4_DKO_top <- plot_bw_profile(bwfiles = G4.BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig_lfc_base_cutoff.bed", mode="center", labels = clean(G4.BWs),show_error=T,colors = mypal2, verbose=F) + scale_y_continuous(limits=c(0,13))
+plot_profile_G4_DKO_top
+```
+## FANCJ diff peaks
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_G4_FANCJ <- plot_bw_profile(bwfiles = G4.BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", mode="center", labels = clean(G4.BWs),show_error=T,colors = mypal2, verbose=F) + scale_y_continuous(limits=c(0,13))
+plot_profile_G4_FANCJ
+```
+
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_G4_TSShi <- plot_bw_profile(bwfiles = G4.BWs,loci = "../genome/genes_hi_lt10kb.mm39.bed", mode="start", labels = clean(G4.BWs),show_error=T,colors = mypal2, verbose=F) + scale_y_continuous(limits=c(0,30))
+plot_profile_G4_TSShi
+```
+```{r fig.width=6, fig.height=4}
+comb.BWs <- paste0(bw_dir,c("G4_CnT_ERCC_WT_combined.bw","G4_CnT_ERCC_KO_combined.bw"))
+
+df <- as.data.frame(bw_loci(comb.BWs,loci="../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed",labels=clean(comb.BWs)))
+
+df$lfc <- log2((df$ERCC.KO+1)/(df$ERCC.WT+1))
+df <- df[rowSums(df[,6:7]) < 200,]
+
+mdf <- reshape2::melt(df[,6:8])
+mdf$variable <- sub("ERCC.","",mdf$variable)
+p <- ggviolin(mdf, x="variable",y="value",fill="variable",palette = mypal2[c(3,1)], add="mean_sd", title = "G4 ERCC1 KO vs WT") 
+facet(p, facet.by = "name", ncol=6) + coord_cartesian(ylim=c(0,50)) + stat_compare_means(label.y = 45, aes(label = paste0("p=", after_stat(p.format)))) 
+```
+
+# R loops
+
+## Rloops DJ
+
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_Rloop_DJ <- plot_bw_profile(bwfiles = R.BWs,loci = "../peaks/G4_CnT_combined_peaks_DJ.bed", mode="center", labels = clean(R.BWs),show_error=T,colors = mypal2, verbose=F)
+plot_profile_Rloop_DJ
+```
+
+## Rloops nonDJ
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_Rloop_nonDJ <- plot_bw_profile(bwfiles = R.BWs,loci = "../peaks/G4_CnT_combined_peaks_nonDJ.bed", mode="center", labels = clean(R.BWs),show_error=T,colors = mypal2, verbose=F) 
+plot_profile_Rloop_nonDJ
+```
+
+## Rloops FANCJ
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+plot_profile_Rloop_FANCJ <- plot_bw_profile(bwfiles = R.BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_FANCJ_sig.bed", mode="center", labels = clean(R.BWs),show_error=T,colors = mypal2, verbose=F) 
+plot_profile_Rloop_FANCJ
+```
+
+
+
