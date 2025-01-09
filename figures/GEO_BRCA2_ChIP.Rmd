@@ -50,7 +50,13 @@ bedscout::plot_euler(list(brca2.peaks,peak_universe),names = c("BRCA2","G4"))
 ```
 ```{r}
 peak_DJs <- bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed')
-bedscout::plot_euler(append(append(peak_DJs,peak_universe),brca2.peaks),names = c("DJ","nonDJ","G4","BRCA2"),shape = "ellipse")
+pk_set <- append(append(peak_DJs,peak_universe),brca2.peaks)
+names(pk_set) <- c("DJ","nonDJ","G4","Brca2")
+p_venn_g4_brca2 <- bedscout::plot_euler(append(append(peak_DJs,peak_universe),brca2.peaks),names = c("DJ","nonDJ","G4","BRCA2"),shape = "ellipse")
+ggsave("plots/venn_g4_brca2.pdf",p_venn_g4_brca2)
+p_venn_g4_brca2
+bedscout::combinations_enrichment(pk_set,2700000000)
+bedscout::plot_combinations_score(pk_set,bedscout::jaccard_index))
 ```
 ```{r}
 brca2.anno <- bedscout::annotate_overlapping_features(brca2.peaks, rtracklayer::import('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed'),name_field = "name",)
