@@ -24,9 +24,9 @@ GSM3633349	ESC_Input
 bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
 
 library("wigglescout")
+library("bedscout")
 library("ggpubr")
 library("ggplot2")
-library("DESeq2")
 library("dplyr")
 library("ggrastr")
 library("regioneR")
@@ -71,6 +71,12 @@ ggsave("plots/Venn_G4_BRCA2_DJ.pdf")
 ```{r}
 bedscout::combinations_enrichment(pk_set,2700000000)
 ```
+```{r}
+brca2_vs_G4 <- overlapPermTest(A=brca2.peaks, B=peak_DJs[[1]], ntimes=1000, alternative="auto", genome=getGenome("mm39"), mc.set.seed=FALSE, verbose=TRUE)
+print(brca2_vs_G4)
+plot(brca2_vs_G4)
+```
+
 ```{python}
 from cobindability.ovbootstrap import bootstrap_coef, bootstrap_npmi
 from cobindability.coefcal import ov_coef, ov_jaccard, ov_ss, ov_sd

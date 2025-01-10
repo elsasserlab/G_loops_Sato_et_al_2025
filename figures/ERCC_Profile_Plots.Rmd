@@ -35,6 +35,19 @@ clean <- function (fn) {
   return(fn)
 }
 
+theme_blank <- theme(axis.line=element_blank(),
+      axis.text.x=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks=element_blank(),
+      axis.title.x=element_blank(),
+      axis.title.y=element_blank(),
+      legend.position="none",
+      panel.background=element_blank(),
+      panel.border=element_blank(),
+      panel.grid.major=element_blank(),
+      panel.grid.minor=element_blank(),
+      plot.background=element_blank())
+
 G4.BWs <- list.files(bw_dir,pattern="G4_CnT_ERCC.+_R..bw",full.names = T)
 R.BWs <- list.files(bw_dir,pattern="Rloop_CnT_ERCC.+_R..bw",full.names = T)
 
@@ -48,12 +61,63 @@ plot_profile_G4_DJ <- plot_bw_profile(bwfiles = G4.BWs,loci = "../peaks/G4_CnT_c
 plot_profile_G4_DJ
 ```
 
-
 ## non-DJ peaks
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
 plot_profile_G4_nonDJ <- plot_bw_profile(bwfiles = G4.BWs,loci = "../peaks/G4_CnT_combined_peaks_nonDJ.bed", mode="center", labels = clean(G4.BWs),show_error=T,colors = mypal2, verbose=F) + scale_y_continuous(limits=c(0,13))
 plot_profile_G4_nonDJ
 ```
+
+## replicate consistency
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+df <- data.frame(bw_loci(G4.BWs,loci="../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed"))
+ggscatter(df,"G4_CnT_ERCC_WT_R1","G4_CnT_ERCC_WT_R2") + geom_abline(a=0,b=1,linetype = "dotted")
+```
+
+## ERCC KO vs WT
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+df$WT <- (df$G4_CnT_ERCC_WT_R1+df$G4_CnT_ERCC_WT_R2)/2
+df$KO <- (df$G4_CnT_ERCC_KO_R1+df$G4_CnT_ERCC_KO_R2)/2
+              
+df$lg2fc <- log((df$KO+1)/(df$WT+1),2)
+df$lg2WT <- log(df$WT,2)
+
+ggscatter(df[df$WT<100,],"WT","lg2fc",size=0.5,alpha=0.2,add="loess",add.params=list(color="orange")) + geom_hline(yintercept = 0,linetype = "dotted",color="orange") + stat_summary_bin(fun.y="mean",bins=20,color="orange")
+```
+## replicate consistency
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+rdf <- data.frame(bw_loci(R.BWs,loci="../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed"))
+ggscatter(rdf[rdf$Rloop_CnT_ERCC_WT_R1<500,],"Rloop_CnT_ERCC_WT_R1","Rloop_CnT_ERCC_WT_R2") + geom_abline(a=0,b=1,linetype = "dotted")
+```
+
+## ERCC KO vs WT
+```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
+rdf$WT <- (rdf$Rloop_CnT_ERCC_WT_R1+rdf$Rloop_CnT_ERCC_WT_R2)/2
+rdf$KO <- (rdf$Rloop_CnT_ERCC_KO_R1+rdf$Rloop_CnT_ERCC_KO_R2)/2
+              
+rdf$lg2fc <- log((rdf$KO+1)/(rdf$WT+1),2)
+rdf$lg2WT <- log(rdf$WT,2)
+
+ggscatter(rdf[rdf$WT<100,],"WT","lg2fc",size=0.5,alpha=0.2,add="loess",add.params=list(color="orange")) + geom_hline(yintercept = 0,linetype = "dotted",color="orange") + stat_summary_bin(fun.y="mean",bins=20,color="orange")
+```
+
+
+```{r fig.width=9, fig.height=6, error=F,echo=F,prompt=F,warning=F}
+sort_v <- bw_heatmap(bwfiles = G4.BWs[3],loci = "../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center")[[1]]
+sort_o <- order(rowMeans(sort_v) + score(import("../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed"))*1000)
+
+h1 <- plot_bw_heatmap(G4.BWs[3],"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center",order_by=sort_o,max_rows_allowed = 200,verbose=F, zmax = 21)
+h2 <- plot_bw_hesort_vh2 <- plot_bw_heatmap(G4.BWs[1],"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center",order_by=sort_o,max_rows_allowed = 200,verbose=F, zmax = 21)
+h3 <- plot_bw_heatmap(R.BWs[3],"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center",order_by=sort_o,max_rows_allowed = 200,verbose=F, zmax = 30)
+h4 <- plot_bw_heatmap(R.BWs[1],"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center",order_by=sort_o,max_rows_allowed = 200,verbose=F, zmax = 30)
+
+h5 <- plot_bw_heatmap(paste0(bw_dir,"PQS_scores.mm39.bw"),"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center",order_by=sort_o,max_rows_allowed = 200,verbose=F,zmin=2, zmax = 10)
+
+ggarrange(h1,h2,h3,h4, ncol = 4,common.legend = T)
+```
+
+
+
+
 ## top DKO peaks
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
 plot_profile_G4_DKO_top <- plot_bw_profile(bwfiles = G4.BWs,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig_lfc_base_cutoff.bed", mode="center", labels = clean(G4.BWs),show_error=T,colors = mypal2, verbose=F) + scale_y_continuous(limits=c(0,13))
