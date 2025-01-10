@@ -4,14 +4,24 @@ output: html_notebook
 ---
 
 Simon Elsässer, Karolinska Institutet (2024)
+Licence: MIT
+
+
+References 
+
+Ma T, Guo L, Yan H, Wang L. Cobind: quantitative analysis of the genomic overlaps. Bioinformatics Advances. 2023; vbad104. https://doi.org/10.1093/bioadv/vbad104
+
+Gel B, Diez-Villanueva A, Serra E, Buschbeck M, Peinado MA, Malinverni R (2016). “regioneR: an R/Bioconductor package for the association analysis of genomic regions based on permutation tests.” Bioinformatics, 32(2), 289-291. doi:10.1093/bioinformatics/btv562.
 
 GSM3633348	ESC_BRCA2
 GSM3633349	ESC_Input
 
+
+
 ### Profile plots of promoters, enhancders and significant peaks determined by DESeq2.
 
 ```{r fig.width=6, fig.height=3}
-bw_dir <- "~/Downloads/BRCA2/"
+bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
 
 library("wigglescout")
 library("ggpubr")
@@ -19,6 +29,7 @@ library("ggplot2")
 library("DESeq2")
 library("dplyr")
 library("ggrastr")
+library("regioneR")
 
 clean <- function (fn) {
   fn <- gsub(pattern = ".+/", "", x = fn)
@@ -47,17 +58,28 @@ mypal <-c("green4","#505050")
 brca2.peaks <- rtracklayer::import('../peaks/ESC_BRCA2_peaks.bed')
 peak_universe <- rtracklayer::import("../peaks/G4_combined_min3rep.bed")
 bedscout::plot_euler(list(brca2.peaks,peak_universe),names = c("BRCA2","G4"))
+ggsave("plots/Venn_G4_BRCA2.pdf")
 ```
 ```{r}
 peak_DJs <- bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed')
 pk_set <- append(append(peak_DJs,peak_universe),brca2.peaks)
 names(pk_set) <- c("DJ","nonDJ","G4","Brca2")
-p_venn_g4_brca2 <- bedscout::plot_euler(append(append(peak_DJs,peak_universe),brca2.peaks),names = c("DJ","nonDJ","G4","BRCA2"),shape = "ellipse")
-ggsave("plots/venn_g4_brca2.pdf",p_venn_g4_brca2)
-p_venn_g4_brca2
-bedscout::combinations_enrichment(pk_set,2700000000)
-bedscout::plot_combinations_score(pk_set,bedscout::jaccard_index))
+bedscout::plot_euler(append(append(peak_DJs,peak_universe),brca2.peaks),names = c("DJ","nonDJ","G4","BRCA2"),shape = "ellipse")
+ggsave("plots/Venn_G4_BRCA2_DJ.pdf")
 ```
+
+```{r}
+bedscout::combinations_enrichment(pk_set,2700000000)
+```
+```{python}
+from cobindability.ovbootstrap import bootstrap_coef, bootstrap_npmi
+from cobindability.coefcal import ov_coef, ov_jaccard, ov_ss, ov_sd
+subsample = 0.75 #default
+bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_combined_min3rep.bed',ov_ss,1/subsample)
+bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_CnT_combined_peaks_DJ.bed',ov_ss,1/subsample)
+bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_CnT_combined_peaks_nonDJ.bed',ov_ss,1/subsample)
+```
+
 ```{r}
 brca2.anno <- bedscout::annotate_overlapping_features(brca2.peaks, rtracklayer::import('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed'),name_field = "name",)
 table(rtracklayer::import('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed')$name)
