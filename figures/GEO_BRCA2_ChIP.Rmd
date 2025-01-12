@@ -29,7 +29,8 @@ library("ggpubr")
 library("ggplot2")
 library("dplyr")
 library("ggrastr")
-library("regioneR")
+library("regioneReloaded")
+library(BSgenome.Mmusculus.UCSC.mm39)
 
 clean <- function (fn) {
   fn <- gsub(pattern = ".+/", "", x = fn)
@@ -49,7 +50,7 @@ clean <- function (fn) {
   return(fn)
 }
 
-brca2.bws <- list.files(bw_dir,pattern="ESC_.+.bw",full.names = T)
+brca2.bws <- list.files(bw_dir,pattern="ESC_BRCA2.+.bw",full.names = T)
 
 mypal <-c("green4","#505050")
 ```
@@ -57,33 +58,68 @@ mypal <-c("green4","#505050")
 ```{r}
 brca2.peaks <- rtracklayer::import('../peaks/ESC_BRCA2_peaks.bed')
 peak_universe <- rtracklayer::import("../peaks/G4_combined_min3rep.bed")
-bedscout::plot_euler(list(brca2.peaks,peak_universe),names = c("BRCA2","G4"))
-ggsave("plots/Venn_G4_BRCA2.pdf")
+p<-bedscout::plot_euler(list(brca2.peaks,peak_universe),names = c("BRCA2","G4"))
+ggsave("plots/Venn_G4_BRCA2.pdf",p)
+p
 ```
+
 ```{r}
 peak_DJs <- bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed')
 pk_set <- append(append(peak_DJs,peak_universe),brca2.peaks)
 names(pk_set) <- c("DJ","nonDJ","G4","Brca2")
-bedscout::plot_euler(append(append(peak_DJs,peak_universe),brca2.peaks),names = c("DJ","nonDJ","G4","BRCA2"),shape = "ellipse")
-ggsave("plots/Venn_G4_BRCA2_DJ.pdf")
+p <- bedscout::plot_euler(append(append(peak_DJs,peak_universe),brca2.peaks),names = c("DJ","nonDJ","G4","BRCA2"),shape = "ellipse")
+ggsave("plots/Venn_G4_BRCA2_DJ.pdf",p)
+p
 ```
 
 ```{r}
 bedscout::combinations_enrichment(pk_set,2700000000)
 ```
 ```{r}
-brca2_vs_G4 <- overlapPermTest(A=brca2.peaks, B=peak_DJs[[1]], ntimes=1000, alternative="auto", genome=getGenome("mm39"), mc.set.seed=FALSE, verbose=TRUE)
+brca2_anno <- bedscout::impute_feature(brca2.peaks,rtracklayer::import('../genome/ESC_10_segments.mm39.bed'),name_field = "name")
+table(brca2_anno$feature)
+```
+
+```{r fig.width=6, fig.height=3}
+chromhmm <- bedscout::import_named_bed_into_list("../genome/ESC_10_segments.mm39.bed")
+chromhmm_chr18 <- endoapply(chromhmm, function(gr) gr[seqnames(gr) == "chr18"])
+brca2_chr18 <- brca2.peaks[seqnames(brca2.peaks) == "chr18",]
+```
+
+
+```{r fig.width=4, fig.width=4}
+brca2_vs_chmm<-crosswisePermTest(Alist = list(brca=brca2.peaks), Blist = chromhmm_chr18, 
+                            genome = getGenome("mm39")[18], ranFUN = "resampleGenome",per.chromosome=T,
+                            ntimes= 1000)
+brca2_vs_chmm@multiOverlaps
+brca2_vs_chmm<-makeCrosswiseMatrix(brca2_vs_chmm,pvcut = 0.05)
+
+plotCrosswiseMatrix(brca2_vs_chmm)
+```
+
+```{r}
+brca2_vs_G4 <- overlapPermTest(A=brca2.peaks, B=peak_universe, ntimes=100, genome="mm39", alternative = "auto",verbose=T)
 print(brca2_vs_G4)
 plot(brca2_vs_G4)
 ```
+```{r fig.width=4, fig.width=4}
+brca2_vs_DJ<-crosswisePermTest(Alist = list(brca2.peaks), Blist = list(G4=peak_universe,DJ=peak_DJs[[1]],nonDJ=peak_DJs[[2]]), 
+                            genome = getGenome("mm39"), ranFUN = "resampleGenome",
+                            ntimes= 100)
+
+brca2_vs_DJ@multiOverlaps
+```
+
+
+
 
 ```{python}
-from cobindability.ovbootstrap import bootstrap_coef, bootstrap_npmi
-from cobindability.coefcal import ov_coef, ov_jaccard, ov_ss, ov_sd
-subsample = 0.75 #default
-bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_combined_min3rep.bed',ov_ss,1/subsample)
-bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_CnT_combined_peaks_DJ.bed',ov_ss,1/subsample)
-bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_CnT_combined_peaks_nonDJ.bed',ov_ss,1/subsample)
+#from cobindability.ovbootstrap import bootstrap_coef, bootstrap_npmi
+#from cobindability.coefcal import ov_coef, ov_jaccard, ov_ss, ov_sd
+#subsample = 0.75 #default
+#bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_combined_min3rep.bed',ov_ss,1/subsample)
+#bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_CnT_combined_peaks_DJ.bed',ov_ss,1/subsample)
+#bootstrap_npmi('../peaks/ESC_BRCA2_peaks.bed','../peaks/G4_CnT_combined_peaks_nonDJ.bed',ov_ss,1/subsample)
 ```
 
 ```{r}
@@ -105,21 +141,47 @@ plot_bw_profile(bwfiles = brca2.bws[1],loci = peak_universe, labels=c("G4s"),mod
 ## DJ peaks
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
 plot_profile_BRCA2 <- plot_bw_profile(bwfiles = brca2.bws[1],loci = peak_DJs, labels=c("DJ","nonDJ"),mode="center",show_error=T,colors = mypal, verbose=F) + coord_cartesian(ylim=c(0,2))
+ggsave("plots/profile_Brca2_DJ.pdf",plot_profile_BRCA2)
 plot_profile_BRCA2
 ```
 
 
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
-plot_bw_profile(bwfiles = brca2.bws[1],loci = bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed'),mode="center",show_error=T,verbose=F,) + coord_cartesian(ylim=c(0,2.5))
-```
-```{r}
-unlist(bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed'))
+cats <- bedscout::import_named_bed_into_list('../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed')
+plot_bw_profile(bwfiles = brca2.bws[1],loci = cats,labels=names(cats), mode="center",show_error=T,verbose=F,) + coord_cartesian(ylim=c(0,2.5))
 ```
 
-```{r fig.width=3, fig.height=4}
-plot_bw_heatmap(bwfiles = brca2.bws[1],loci = peak_universe,mode="center",max_rows_allowed = 500, verbose=F)
-plot_bw_heatmap(bwfiles = brca2.bws[2],loci = peak_DJs[[1]],mode="center",max_rows_allowed = 500, verbose=F)
-plot_bw_heatmap(bwfiles = brca2.bws[2],loci = peak_DJs[[2]],mode="center",max_rows_allowed = 500, verbose=F)
+
+```{r fig.width=6, fig.height=6}
+G4.BWs <- list.files(bw_dir,pattern="G4_CnT_WT.+_combined.bw",full.names = T)
+sort_v <- bw_heatmap(bwfiles = G4.BWs[1],loci = "../peaks/G4_combined_min3rep.bed",mode="center")[[1]]
+sort_o <- order(rowMeans(sort_v))
+
+h1 <- plot_bw_heatmap(G4.BWs[1],"../peaks/G4_combined_min3rep.bed",mode="center",order_by=sort_o,max_rows_allowed = 500,verbose=F,zmax=50)
+h2 <- plot_bw_heatmap(brca2.bws[1],"../peaks/G4_combined_min3rep.bed",mode="center",order_by=sort_o,max_rows_allowed = 500,verbose=F,zmax=5, zmin=0.5)
+
+p <- ggarrange(h1,h2,ncol = 2,combine.legend=T)
+ggsave('plots/heatmaps_brca2_g4.pdf',p[[1]])
+p[[1]]
+```
+
+
+```{r fig.width=4, fig.height=4}
+df <- as.data.frame(bw_loci(c(G4.BWs[1],brca2.bws[1]),'../peaks/G4_combined_min3rep.bed',labels = c("BRCA2","G4")))
+
+ggscatter(df,"BRCA2","G4",size=0.2,alpha=0.1,add="reg.line") + stat_cor(method="pearson") + scale_x_continuous(trans="log")+ scale_y_continuous(trans="log")
+```
+
+```{r fig.width=6, fig.height=6}
+sort_v <- bw_heatmap(bwfiles = G4.BWs[1],loci = "../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center")[[1]]
+sort_o <- order(rowMeans(sort_v) + score(import("../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed"))*1000)
+
+h1 <- plot_bw_heatmap(G4.BWs[1],"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center",order_by=sort_o,max_rows_allowed = 300,verbose=F, zmax = 50)
+h2 <- plot_bw_heatmap(brca2.bws[1],"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",mode="center",order_by=sort_o,max_rows_allowed = 300,verbose=F, zmax=4, zmin=0.5)
+
+p <- ggarrange(h1,h2,ncol = 2,combine.legend=T)
+ggsave('plots/heatmaps_brca2_g4_DJ_nonDJ.pdf',p[[1]])
+p[[1]]
 ```
 
 

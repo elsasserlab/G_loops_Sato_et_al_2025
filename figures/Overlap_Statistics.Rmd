@@ -1,0 +1,143 @@
+---
+title: "Overlap statistics"
+output: html_notebook
+---
+
+Simon Elsässer, Karolinska Institutet (2024)
+Licence: MIT
+
+
+References 
+
+Gel B, Diez-Villanueva A, Serra E, Buschbeck M, Peinado MA, Malinverni R (2016). “regioneR: an R/Bioconductor package for the association analysis of genomic regions based on permutation tests.” Bioinformatics, 32(2), 289-291. doi:10.1093/bioinformatics/btv562.
+
+Roberto Malinverni, David Corujo, Bernat Gel, Marcus Buschbeck, regioneReloaded: evaluating the association of multiple genomic region sets, Bioinformatics, Volume 39, Issue 11, November 2023, btad704, https://doi.org/10.1093/bioinformatics/btad704
+
+### Profile plots of promoters, enhancders and significant peaks determined by DESeq2.
+
+```{r fig.width=6, fig.height=3}
+library("bedscout")
+library("regioneReloaded")
+
+chromhmm <- bedscout::import_named_bed_into_list("../genome/ESC_10_segments.mm39.bed")
+peaks_DJ <- bedscout::import_named_bed_into_list("../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed")
+allG4 <- rtracklayer::import("../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed")
+
+chromhmm_chr18 <- endoapply(chromhmm, function(gr) gr[seqnames(gr) == "chr18"])
+peaks_DJ_chr18 <- endoapply(peaks_DJ, function(gr) gr[seqnames(gr) == "chr18"])
+allG4_chr18 <- allG4[seqnames(allG4) == "chr18"]
+```
+
+```{r}
+allG4_anno <- bedscout::impute_feature(allG4,rtracklayer::import('../genome/ESC_10_segments.mm39.bed'),name_field = "name")
+table(allG4_anno$feature)
+```
+
+```{r}
+DJ_anno <- bedscout::impute_feature(rtracklayer::import('../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed'),rtracklayer::import('../genome/ESC_10_segments.mm39.bed'),name_field = "name")
+table(DJ_anno$feature,DJ_anno$name)
+```
+
+```{r fig.width=4, fig.width=4}
+g4_hmm_overlap<-crosswisePermTest(Alist = append(peaks_DJ_chr18, list(allG4=allG4_chr18)), Blist = chromhmm_chr18, 
+                            genome = getGenome(mm39)[20], ranFUN = "resampleGenome",per.chromosome=T,
+                            ntimes= 1000)
+
+g4_hmm_overlap<-makeCrosswiseMatrix(g4_hmm_overlap,pvcut = 0.005)
+
+plotCrosswiseMatrix(g4_hmm_overlap,matrix_type = "association",colMatrix = c("limegreen","white","darkorchid"))
+ggsave("plots/heatmap_regioneR_association.pdf")
+```
+
+```{r}
+plotCrosswiseMatrix(chrom_hmm_overlap,matrix_type = "correlation",cor = "col",colMatrix = c("limegreen","white","darkorchid"))
+```
+
+```{r}
+plotCrosswiseMatrix(g4_hmm_overlap,matrix_type = "correlation",colMatrix = c("limegreen","white","darkorchid"))
+```
+
+```{r}
+write.table(g4_hmm_overlap@multiOverlaps$DJ,"plots/regioneR_DJ.txt",quote = F,col.names = T, sep = "\t")
+write.table(g4_hmm_overlap@multiOverlaps$nonDJ,"plots/regioneR_nonDJ.txt",quote = F,col.names = T, sep = "\t")
+write.table(g4_hmm_overlap@multiOverlaps$all,"plots/regioneR_all.txt",quote = F,col.names = T, sep = "\t")
+g4_hmm_overlap@multiOverlaps
+```
+
+```{r}
+g4_hmm_overlap@matrix$GMat_pv
+```
+
+
+### Overlap enrichment relative to peak universe
+
+```{r fig.width=4, fig.width=4}
+peaks_ns <- rtracklayer::import("../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed")
+peaks_ns <- peaks_ns[seqnames(peaks_ns) == "chr18"]
+g4_peak_perm<-crosswisePermTest(Alist = append(peaks_DJ_chr18, list(ns=peaks_ns)), Blist = chromhmm_chr18, 
+                            genome = getGenome(mm39)[20],universe = allG4_chr18, ranFUN = "resampleRegions", per.chromosome=T,
+                            ntimes= 100)
+
+g4_peak_perm<-makeCrosswiseMatrix(g4_peak_perm)
+
+plotCrosswiseMatrix(g4_peak_perm,matrix_type = "association", colMatrix = c("limegreen","white","darkorchid"))
+```
+
+### Overlap G4 peaks with pqsfinder prediction
+
+```{r fig.width=4, fig.height=4}
+source_dir <- "/Volumes/DATA/DATA/Puck/genome/"
+pqs_chr18 <- rtracklayer::import(paste0(source_dir,"PQS_scores.chr18.bed"))
+
+g4_pqs_perm<- overlapPermTest(A= allG4_chr18, B = pqs_chr18, 
+                            genome = getGenome(mm39)[20],ranFUN = "resampleGenome", per.chromosome=T,
+                            ntimes= 1000)
+print(g4_pqs_perm)
+```
+
+```{r}
+pdf(file = "plots/G4_pqs_permuation_test.pdf", width = 4,height = 4)
+  plot(g4_pqs_perm)
+dev.off()
+```
+
+### G4 peaks and scores of pqsfinder prediction
+
+```{r}
+library(wigglescout)
+library(ggpubr)
+
+rnd <- randomizeRegions(allG4,"mm39",allow.overlaps = F)
+G4_pqs_overlap <- bw_loci(paste0(source_dir,"PQS_scores.mm39.bw"),"../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed",per_locus_stat = "max")
+DJ_pqs_overlap <- bw_loci(paste0(source_dir,"PQS_scores.mm39.bw"),"../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed",per_locus_stat = "max")
+rnd_pqs_overlap <- bw_loci(paste0(source_dir,"PQS_scores.mm39.bw"),rnd,per_locus_stat = "max")
+
+G4_pqs_overlap$set <- "G4"
+DJ_pqs_overlap$set <- DJ_pqs_overlap$name
+rnd_pqs_overlap$name <- "random"
+rnd_pqs_overlap$set <- "random"
+
+g4_scores <- rbind(mcols(G4_pqs_overlap),mcols(rnd_pqs_overlap))
+
+g4_scores$withPQS <- g4_scores$PQS_scores.mm39 >= 20
+
+table(g4_scores$withPQS,g4_scores$set)
+```
+
+```{r}
+table(g4_scores$set)
+```
+```{r}
+aggregate(PQS_scores.mm39 ~ set, g4_scores, FUN=median)
+```
+```{r}
+ggdensity(g4_scores,x="PQS_scores.mm39",color="set",add="median")
+```
+```{r}
+g4_scores <- rbind(mcols(G4_pqs_overlap),mcols(DJ_pqs_overlap))
+table(g4_scores$PQS_scores.mm39>20,g4_scores$set)
+```
+
+```{r}
+ggboxplot(g4_scores[g4_scores$PQS_scores.mm39>20,],x="set",y="PQS_scores.mm39",fill="set",add="mean") + coord_cartesian(ylim=c(0,200))
+```
