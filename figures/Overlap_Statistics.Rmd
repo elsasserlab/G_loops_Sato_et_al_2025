@@ -75,7 +75,7 @@ g4_hmm_overlap@matrix$GMat_pv
 peaks_ns <- rtracklayer::import("../peaks/G4_CnT_combined_peaks_DESeq_nonsig.bed")
 peaks_ns <- peaks_ns[seqnames(peaks_ns) == "chr18"]
 g4_peak_perm<-crosswisePermTest(Alist = append(peaks_DJ_chr18, list(ns=peaks_ns)), Blist = chromhmm_chr18, 
-                            genome = getGenome(mm39)[20],universe = allG4_chr18, ranFUN = "resampleRegions", per.chromosome=T,
+                            genome = getGenome("mm39")[18],universe = allG4_chr18, ranFUN = "resampleRegions", per.chromosome=T,
                             ntimes= 100)
 
 g4_peak_perm<-makeCrosswiseMatrix(g4_peak_perm)
@@ -90,7 +90,7 @@ source_dir <- "/Volumes/DATA/DATA/Puck/genome/"
 pqs_chr18 <- rtracklayer::import(paste0(source_dir,"PQS_scores.chr18.bed"))
 
 g4_pqs_perm<- overlapPermTest(A= allG4_chr18, B = pqs_chr18, 
-                            genome = getGenome(mm39)[20],ranFUN = "resampleGenome", per.chromosome=T,
+                            genome = getGenome("mm39")[18],ranFUN = "resampleGenome", per.chromosome=T,
                             ntimes= 1000)
 print(g4_pqs_perm)
 ```
@@ -102,6 +102,21 @@ dev.off()
 ```
 
 ### G4 peaks and scores of pqsfinder prediction
+
+```{r fig.width=6, fig.height=6}
+bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+source_dir <- "/Volumes/DATA/DATA/Puck/genome/"
+G4.BWs <- list.files(bw_dir,pattern="G4_CnT_WT.+_combined.bw",full.names = T)
+sort_v <- bw_heatmap(bwfiles = G4.BWs[1],loci = "../peaks/G4_combined_min3rep.bed",mode="center")[[1]]
+sort_o <- order(rowMeans(sort_v))
+
+h1 <- plot_bw_heatmap(G4.BWs[1],"../peaks/G4_combined_min3rep.bed",mode="center",order_by=sort_o,max_rows_allowed = 200,verbose=F,zmax=50)
+h2 <- plot_bw_heatmap(paste0(source_dir,"PQS_scores.mm39.bw"),"../peaks/G4_combined_min3rep.bed",mode="center",order_by=sort_o,max_rows_allowed = 200,verbose=F,zmax=30,zmin=5)
+
+p <- ggarrange(h1,h2,ncol = 2,combine.legend=F)
+ggsave('plots/heatmaps_g4_pqs.pdf',p[[1]])
+p[[1]]
+```
 
 ```{r}
 library(wigglescout)

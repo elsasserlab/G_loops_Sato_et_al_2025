@@ -185,18 +185,6 @@ p[[1]]
 ```
 
 
-```{r fig.width=2, fig.height=4}
-df <- as.data.frame(bw_loci(brca2,loci="G4_CnT_combined_peaks_DJ_nonDJ.mm9.bed",labels=c("BRCA2","Input")))
-
-
-mdf <- reshape2::melt(df[,c(6,8)])
-ggviolin(mdf, x="name",y="value",fill="name",palette = mypal, add="mean_sd", title = "BRCA2 ChIP-seq (DJ vs nonDJ") + coord_cartesian(ylim=c(0,10)) + stat_compare_means(label.y = 10, aes(label = paste0("p=", after_stat(p.format)))) 
-```
-```{r fig.width=2, fig.height=4}
-mdf <- reshape2::melt(df[,c(6,8)])
-mdf$lg2 <- log2(mdf$value)
-ggviolin(mdf, x="name",y="value",fill="name",palette = mypal, add="boxplot", title = "BRCA2 ChIP-seq (DJ vs nonDJ")  + coord_cartesian(ylim=c(0,10)) + stat_compare_means(label.y = 10, aes(label = paste0("p=", after_stat(p.format)))) 
-```
 
 
 
