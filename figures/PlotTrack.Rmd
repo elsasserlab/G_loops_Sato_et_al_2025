@@ -1,0 +1,30 @@
+---
+title: "G4 CUT&Tag analysis mESC (ERCC WT and KO)"
+output: html_notebook
+---
+
+Simon Elsässer, Karolinska Institutet (2025)
+
+### Genome Browser Plots
+
+```{r}
+bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+
+tobias_plotTracks <- function(bigwigs,regions,sites,highlight,colors) {
+  #bigwig groups are list of strings or array of strings, individual bigwigs must be separated by space within each string
+  opt_bw <- paste("--bigwig", bigwigs, collapse=" ")
+  opt_regions <- paste("--regions",regions)
+  opt_sites <- paste("--sites",sites)
+  opt_highlight <- paste("--highlight",highlight)
+  opt_colors <- paste("--colors",colors, collapse=" ")
+  exec_string <- paste("TOBIAS PlotTracks",opt_bw,opt_regions,opt_sites,opt_highlight,opt_colors,sep=" ")
+  system(exec_string)
+  return(exec_string)
+}
+```
+
+```{r}
+bw_set1 <- c("/Volumes/DATA/DATA/Puck/bigwig/G4_CnT_WT_batch2_R1.unique.bw /Volumes/DATA/DATA/Puck/bigwig/G4_CnT_WT_batch2_R2.unique.bw /Volumes/DATA/DATA/Puck/bigwig/G4_CnT_WT_batch2_R3.unique.bw","/Volumes/DATA/DATA/Puck/bigwig/G4_CnT_P3D4_batch2_R2.unique.bw /Volumes/DATA/DATA/Puck/bigwig/G4_CnT_P3D4_batch2_R3.unique.bw /Volumes/DATA/DATA/Puck/bigwig/G4_CnT_P3D4_batch2_R1.unique.bw")
+
+tobias_plotTracks(bw_set1,'../genome/igv_roi.bed','../peaks/G4_CnT_combined_peaks_DESeq_sig_categories.bed','../peaks/G4_CnT_combined_peaks_DJ_nonDJ.bed',c("black","red","blue"))
+```
