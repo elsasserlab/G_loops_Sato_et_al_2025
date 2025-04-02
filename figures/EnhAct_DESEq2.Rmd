@@ -9,7 +9,7 @@ Simon Elsässer, Karolinska Institutet (2023)
 
 
 ```{r fig.width=6, fig.height=3}
-bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+bw_dir <- "../bigwig"
 chromhmm <- "../genome/ESC_10_segments.mm39.bed"
 
 library("wigglescout")
@@ -135,7 +135,7 @@ BWs.WT <- BWs[grep("WT",BWs)]
 BWs.FANCJ <- BWs[grep("D1D6",BWs)]
 BWs.DHX36 <- BWs[grep("P2D2",BWs)]
 BWs.DKO <- BWs[grep("P3D4",BWs)]
-  
+
 # Calculate here some loci or bins
 cov.WT <- bw_loci(BWs.WT, loci = enh_act)
 cov.DHX36 <- bw_loci(BWs.DHX36, loci = enh_act)
@@ -179,36 +179,36 @@ data_DKO$mean <- log10(data_DKO$mean)
 
 ```{r fig.width=2, fig.height=2}
 ggscatter(data_DHX36,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
-plot_MA_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
+plot_MA_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600)
 ```
 ```{r fig.width=2, fig.height=2}
 data_DHX36$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
 data_DHX36$cov.DHX36 <- rowMeans(as.data.frame(cov.DHX36)[,6:8])
 ggscatter(data_DHX36,x ="cov.WT",y="cov.DHX36",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[1])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(0,300),xlim=c(0,300)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
-plot_XY_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600) 
+plot_XY_DHX36 <- rasterize(last_plot(), layers='Point', dpi=600)
 ```
 
 ```{r fig.width=2, fig.height=2}
 ggscatter(data_FANCJ,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[2])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
-plot_MA_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600) 
+plot_MA_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600)
 ```
 ```{r fig.width=2, fig.height=2}
 data_FANCJ$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
 data_FANCJ$cov.FANCJ <- rowMeans(as.data.frame(cov.FANCJ)[,6:8])
 ggscatter(data_FANCJ,x ="cov.WT",y="cov.FANCJ",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[2])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(0,300),xlim=c(0,300)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
-plot_XY_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600) 
+plot_XY_FANCJ <- rasterize(last_plot(), layers='Point', dpi=600)
 ```
 
 ```{r fig.width=2, fig.height=2}
 ggscatter(data_DKO,x ="mean",y="lfc",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(-5,5))
-plot_MA_DKO <- rasterize(last_plot(), layers='Point', dpi=600) 
+plot_MA_DKO <- rasterize(last_plot(), layers='Point', dpi=600)
 ```
 
 ```{r fig.width=2, fig.height=2}
 data_DKO$cov.WT <- rowMeans(as.data.frame(cov.WT)[,6:8])
 data_DKO$cov.DKO <- rowMeans(as.data.frame(cov.DKO)[,6:8])
 ggscatter(data_DKO,x ="cov.WT",y="cov.DKO",color="isDE",size = 0.8, alpha=0.5, palette = c("gray",mypal[3])) + geom_hline(yintercept = 0, linetype="dashed", size=0.1) + coord_cartesian(ylim=c(0,300),xlim=c(0,300)) + geom_abline(slope = 1, linetype="dashed", size=0.1)
-plot_XY_DKO <- rasterize(last_plot(), layers='Point', dpi=600) 
+plot_XY_DKO <- rasterize(last_plot(), layers='Point', dpi=600)
 ```
 
 ```{r fig.width=2, fig.height=2}
@@ -251,7 +251,7 @@ ggsave("plots/EnhAct_DESeq2_MA_FANCJ.pdf",plot_MA_FANCJ,width = 4, height= 4)
 ggsave("plots/EnhAct_DESeq2_MA_DKO.pdf",plot_MA_DKO,width = 4, height= 4)
 ggsave("plots/EnhAct_DESeq2_LFC_DHX36.pdf",plot_LFC_DKO_vs_DHX36,width = 4, height= 4)
 ggsave("plots/EnhAct_DESeq2_LFC_FANCJ.pdf",plot_LFC_DKO_vs_FANCJ,width = 4, height= 4)
-``` 
+```
 
 ```{r fig.width=6, fig.height=4}
 library(cowplot)
@@ -269,12 +269,12 @@ p <- ggdraw() +
                   x = c(0, 0.33, 0.66, 0, 0.33, 0.66), y = c(1, 1, 1, 0.5, 0.5, 0.5))
 p
 ggsave("panels/EnhAct_DESeq2.pdf",p)
-``` 
+```
 
 ```{r}
-cov <- cbind( as.data.frame(cov.WT)[,1:8], 
-              as.data.frame(cov.DHX36)[,6:8], 
-              as.data.frame(cov.FANCJ)[,6:8], 
+cov <- cbind( as.data.frame(cov.WT)[,1:8],
+              as.data.frame(cov.DHX36)[,6:8],
+              as.data.frame(cov.FANCJ)[,6:8],
               as.data.frame(cov.DKO)[,6:8])
 
 colnames(cov) <- c(colnames(cov)[1:5],"WT1","WT2","WT3","DHX1","DHX2","DHX3","FAN1","FAN2","FAN3","DKO1","DKO2","DKO3")
@@ -293,5 +293,3 @@ plot_viol_rep_all_peaks <- ggviolin(mdf, x="variable",y="value",fill="cond",pale
   coord_cartesian(ylim=c(0,100))
 plot_viol_rep_all_peaks
 ```
-
-

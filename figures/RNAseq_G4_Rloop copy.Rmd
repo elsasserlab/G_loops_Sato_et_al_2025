@@ -9,7 +9,7 @@ Simon Elsässer, Karolinska Institutet (2023)
 
 
 ```{r fig.width=6, fig.height=3}
-bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+bw_dir <- "../bigwig"
 chromhmm <- "../genome/ESC_10_segments.mm39.bed"
 
 library("wigglescout")

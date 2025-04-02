@@ -8,7 +8,7 @@ Simon Elsässer, Karolinska Institutet (2023)
 ### Profile plots of promoters, enhancders and significant peaks determined by DESeq2.
 
 ```{r fig.width=6, fig.height=3}
-bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+bw_dir <- "../bigwig"
 
 library("wigglescout")
 library("ggpubr")
@@ -110,7 +110,7 @@ ggsave("plots/profile_G4_nonsig.pdf",plot_profile_G4_nonsig,width = 3, height= 3
 ggsave("plots/profile_G4_ProAct.pdf",plot_profile_G4_proact,width = 3, height= 3)
 ggsave("plots/profile_G4_ProBiv.pdf",plot_profile_G4_probiv,width = 3, height= 3)
 ggsave("plots/profile_G4_EnhAct.pdf",plot_profile_G4_enhact,width = 3, height= 3)
-``` 
+```
 
 ### Heatmaps
 
@@ -132,7 +132,7 @@ plot_heatmap_G4
 
 ```{r}
 ggsave("panels/heatmap_G4.pdf",plot_heatmap_G4,width = 6, height= 3)
-``` 
+```
 
 ```{r fig.width=8, fig.height=3}
 library(cowplot)
@@ -173,10 +173,10 @@ ggsave("panels/heatmap_G4_peaks_pro_enh.pdf",p,width=10, height=5)
 
 
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
-bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig//"
+bw_dir <- "../bigwig/"
 BWs_Rloop <- paste0(bw_dir,list.files(bw_dir,pattern="Rloop_.+_combined.bw"))
 plot_profile_Rloop_DKO <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F, remove_top=0.001) + scale_y_continuous(limits=c(0,15))
-plot_profile_Rloop_DKO 
+plot_profile_Rloop_DKO
 ```
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
 plot_profile_Rloop_DHX36 <- plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DHX36_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F) + scale_y_continuous(limits=c(0,15))
@@ -198,7 +198,7 @@ ggsave("plots/profile_Rloop_DHX36.pdf",plot_profile_Rloop_DHX36,width = 3, heigh
 ggsave("plots/profile_Rloop_FANCJ.pdf",plot_profile_Rloop_FANCJ,width = 3, height= 3)
 ggsave("plots/profile_Rloop_DKO.pdf",plot_profile_Rloop_DKO,width = 3, height= 3)
 ggsave("plots/profile_Rloop_nonsig.pdf",plot_profile_Rloop_nonsig,width = 3, height= 3)
-``` 
+```
 
 
 ```{r fig.width=6, fig.height=3, error=F,echo=F,prompt=F,warning=F}
@@ -245,7 +245,7 @@ covR_proHi <- bw_loci(BWs_Rloop, loci = "../peaks/G4_CnT_combined_peaks_DESeq_DK
 df <- cbind(as.data.frame(cov_proHi)[6:9],as.data.frame(covR_proHi)[6:9])
 
 colnames(df) <- c("FANCJ","DHX36","DKO","WT","R_FANCJ","R_DHX36","R_DKO","R_WT")
-df2 <- log2(df) 
+df2 <- log2(df)
 ggscatter(df,x ="WT",y="R_WT",size = 0.2, alpha=0.1) + geom_abline(slope = 1, intercept = 0, linetype="dashed", size=0.1) + coord_cartesian(xlim=c(0,100),ylim=c(0,100))
 ```
 

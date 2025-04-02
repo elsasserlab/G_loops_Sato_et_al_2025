@@ -8,7 +8,7 @@ Simon Elsässer, Karolinska Institutet (2023)
 ### Profile plots of promoters, enhancders and significant peaks determined by DESeq2.
 
 ```{r fig.width=6, fig.height=3}
-bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig/"
+bw_dir <- "../bigwig"
 
 library("wigglescout")
 library("ggpubr")
@@ -104,7 +104,7 @@ ggviolin(mdf, x="variable",y="value",fill="variable",palette = mypal, add="mean_
 
 ## R loops
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
-bw_dir <- "/Volumes/DATA/DATA/Puck/bigwig//"
+bw_dir <- "../bigwig/"
 BWs_Rloop <- paste0(bw_dir,list.files(bw_dir,pattern="Rloop_.+_combined.bw"))
 plot_bw_profile(bwfiles = BWs_Rloop,loci = "../peaks/G4_CnT_combined_peaks_DESeq_DKO_sig.bed", mode="center", labels = clean(BWs_Rloop),show_error=T,colors = mypal, verbose=F)
 ```
