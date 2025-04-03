@@ -52,6 +52,7 @@ pks_DJ <- bedscout::annotate_overlapping_features(pks,feat_gr = DJ,name_field = 
 pks_DJ$nearby_features[is.na(pks_DJ$nearby_features)] <- ""
 table(pks_DJ$name)
 table(pks_DJ$name,pks_DJ$nearby_features)
+table(pks_DJ$nearby_features)
 ```
 ```{r fig.width=4, fig.height=4, error=F,echo=F,prompt=F,warning=F}
 mypal <-c("red2","#505050")
@@ -73,6 +74,12 @@ cohen.d(mdf$value,mdf$variable)
 ```
 ```{r}
 ggviolin(mdf,x="DJ",y="value",fill="DJ",add="mean",palette = c("#505050","#505050"),facet.by = "variable") +  stat_compare_means(label.y = 60) + coord_cartesian(ylim=c(0,70))
+ggsave('plots/violin_G4_WT_signal_DJ_wilcoxon.pdf')
+```
+```{r}
+df1 <- df[df$DJ!="",]
+cohen.d(df1$WT,df1$DJ)
+cohen.d(df1$DKO,df1$DJ)
 ```
 
 ```{r fig.width=3, fig.height=3, error=F,echo=F,prompt=F,warning=F}
